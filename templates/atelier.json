@@ -1,0 +1,15 @@
+{
+  "id": "atelier",
+  "name": "Atelier",
+  "version": 1,
+  "adapter": "atelier",
+  "pages": [
+    "home",
+    "properties",
+    "property",
+    "contact",
+    "disclosure",
+    "content"
+  ],
+  "actions": ["search", "inquiry", "download", "return"]
+}

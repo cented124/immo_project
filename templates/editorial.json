@@ -1,0 +1,15 @@
+{
+  "id": "editorial",
+  "name": "Editorial",
+  "version": 1,
+  "adapter": "editorial",
+  "pages": [
+    "home",
+    "properties",
+    "property",
+    "contact",
+    "disclosure",
+    "content"
+  ],
+  "actions": ["search", "inquiry", "download", "return"]
+}

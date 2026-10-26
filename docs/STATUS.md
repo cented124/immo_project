@@ -1,0 +1,31 @@
+# Fortsetzbarer Umsetzungsstand
+
+Stand: 26.10.2026. Produktname des firmenneutralen Werkzeugs: **Raumwerk**. Musteridentität der öffentlichen Website: austauschbares „RAUM & WERT“. Kein Aurevia-spezifischer Datenbank-/Backendcode.
+
+## Umgesetzt
+
+1. Grundsystem: Next.js/FastAPI, migrationsgestützte Tabellen, lokale persistente Ablage, Argon2-Login, Sitzungen/Rollen, gemeinsame validierte Konfiguration.
+2. Öffentliche Seiten und Templates: responsive Atelier-/Editorial-Stile, gemeinsame Funktionskomponenten, Konfigurationsentwurf/Vorschau/Veröffentlichung, Inhalte/Navigation/Abschnitte/SEO.
+3. Immobilien: geführter Assistent, Stammdaten, Lage, Eigenschaften, Kauf-/Mietpreise, nachvollziehbare Warmmiete, Energieprüfung, Medien, Status, Duplizieren, Vorschau, Listen/Details/Filter/Pagination.
+4. Anfragen: Kontakt/Bewerbung, serverseitige Objektzuordnung, konfigurierbare Ziele, Idempotenz, Ratelimits, Outbox, SMTP/Telegram, Tests, Wiederholungen, CSV, Status, Notizen und Löschung.
+5. PDF: Vorlagen-Upload/Austausch, modulabhängiger Download, optionale private Rückgabe mit Anfragezuordnung; kein erfundenes Kunden-PDF.
+6. Analytics/Betrieb: tatsächliche Ereignisse, Dashboard, Änderungsprotokoll, Docker Compose, Konfigurationserzeugung, Installations-/Betriebs-/Template-/Backup-Dokumentation.
+
+## Externe Voraussetzungen
+
+- Kundeneigenes PDF ist eingebunden: 4 Seiten, 27 leere AcroForm-Felder, kein PDF-JavaScript. Download bytegleich geprüft.
+- Telegram ist mit der gewählten Firmengruppe live geprüft: Testnachricht, Kontakt-Outbox und private Dokumentbenachrichtigung, insgesamt drei bestätigte Nachrichten. SMTP-Zugang ist verschlüsselt gespeichert, aber die Verbindung zu 465/587 wird aus dieser Cloud abgelehnt. Zwei Testaufrufe, keine angenommene E-Mail.
+- Eigene Unternehmens-/Kontaktdaten und rechtlich geprüfte Texte vor öffentlicher Veröffentlichung ergänzen.
+- Öffentliche Domain, TLS-Reverse-Proxy und geschützte externe Backupablage sind noch nicht eingerichtet.
+
+## Referenzprüfung
+
+Goldbach-Selbstauskunftsseite wurde nach Netzwerkfreigabe per HTTP gelesen: Seitentitel „Selbstauskunft zum Download“, zwei Links auf dasselbe PDF, kein HTML-Formular. Keine fremden PDFs, Marken, Texte oder Bilder übernommen. Ein kontaktloser Besichtigungsprozess wurde nicht implementiert. Aurevia war beim Abruf nicht zugänglich; dessen Design wurde ausschließlich anhand der vom Nutzer gelieferten Screenshots berücksichtigt.
+
+Offizielle Next.js-Dokumentation zu App-Router-Seiten, Metadaten und Rewrites (mit installierter versionsspezifischer Dokumentation), SQLAlchemy-Sitzungsdokumentation und Telegram Bot API wurden konsultiert. Titelbild ist eine eigens generierte Architekturillustration, kein reales Angebot. Schriften: Manrope und Barlow Condensed aus Fontsource (OFL).
+
+Die tatsächlichen Test-/Build-Ergebnisse stehen in `VALIDATION.md`. Dieser Stand ist keine Behauptung, dass Livebetrieb, fremde Integrationen, Backupziel oder Veröffentlichung bereits eingerichtet sind.
+
+## Nachprüfung des ursprünglichen Auftrags
+
+Siehe `AUFTRAGSABGLEICH.md` für den vollständigen Abgleich und `../ANLEITUNG-WINDOWS.md` für den einfachen lokalen Start. Ergänzt wurden persistenter Template-Import, Seitenformularziele, sichere Vorschau-Navigation ohne Versand, eigene Dokumentbenachrichtigungen mit atomarer Deduplizierung, vollständige Medienduplikate, Kontoverwaltung, Unicode-/Notizensuche und gefilterter CSV-Export. Windows-Starter und ein Paket ohne Zugangsdaten stehen bereit.

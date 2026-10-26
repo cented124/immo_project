@@ -1,0 +1,76 @@
+# Nachweis der lokalen Abnahme
+
+Stand: 26.10.2026. Alle Daten in automatisierten Tests sind ausdrücklich synthetisch. Keine Beispielimmobilie wurde im eigentlichen Entwicklungsdatenbestand veröffentlicht.
+
+| Prüfung | Ergebnis |
+| --- | --- |
+| Python-Integrationstests mit temporärem SQLite | **23 bestanden** |
+| Dieselbe Suite mit echtem PostgreSQL 17 (Docker) | **23 bestanden** |
+| Playwright / Chromium – Desktop und mobile Ansicht | **10 bestanden** |
+| TypeScript `tsc --noEmit` | bestanden |
+| Next.js Produktionsbuild | bestanden |
+| `docker compose config --quiet` | bestanden |
+| API- und Web-Images bauen | bestanden |
+| Compose: PostgreSQL, API, Web | gestartet, Datenbank-/API-Healthchecks bestanden |
+| Compose: Login, geschützter Bild-Upload und anonymer Zugriff | Login/Upload erfolgreich; anonymer Abruf **401** |
+| Compose: API/Web-Neustart | Anmeldung und Dateiprüfsumme erhalten |
+| Verschlüsseltes Backup und isolierte PostgreSQL-Wiederherstellung | AES256-Archiv entschlüsselt, Datenbank separat wiederhergestellt, Benutzeranzahl und Dateiprüfsumme geprüft |
+| Vollständiger Restore in frischen Compose-Volumes | Datenbank und Dateien zurückgespielt, Dateieigentümer korrigiert, restaurierte Anwendung gestartet, Login und geschützter Dateiabruf mit identischer Prüfsumme erfolgreich |
+| Gespeicherte Installations-/Startscripts | `scripts/install.sh` und `scripts/dev.sh` tatsächlich ausgeführt |
+| Desktop-/Mobil-Sichtprüfung | Startseite und Admin gesichtet; kein horizontaler Überlauf der mobilen Startseite |
+
+## Inhalt der ursprünglichen 14 Backendtests
+
+1. Login, fehlende Sitzung, Rollen, CSRF-Originprüfung, Logout.
+2. Beliebiger Firmenname, unveröffentlichter Entwurf, Veröffentlichung und Erhalt nach neuem App-Lebenszyklus.
+3. Modulabschaltung sperrt Immobilien-API, Detail-API, öffentliche Bilder und Kontaktannahme.
+4. Entwurf → Veröffentlichung → objektgebundene Bewerbung → Archivierung; verborgene Straßenadresse, Suchfilter, zurückgezogene bekannte Links.
+5. Veröffentlichungsprüfung, Warmmietenberechnung ohne doppelte Heizkosten und private Duplikate.
+6. Idempotenz, widersprechende Mehrfachübermittlung, Datenschutzpflicht, Honeypot, ungültige E-Mail und Ratelimit.
+7. Anfragenfilter, interner Vermerk, Status, CSV-Formelinjection-Schutz und Löschung.
+8. PDF-Austausch, aktueller Download, private Rückgabe mit persönlichem Rückgabecode, falscher Code, Zugriff ohne Sitzung und Moduldeaktivierung.
+9. Unzulässige Uploads und Template-Manifeste; beide mitgelieferten Adapter.
+10. Tatsächlich gespeicherte Ereignisse, Formulare, Tageswerte und fehlende Analyticsdaten bei deaktiviertem Modul.
+11. **Echter lokaler SMTP-Testserver**: Testmail, Outbox-Zustellung, Firmen-Absender, Reply-To und verschlüsselte/maskierte Zugangsdaten.
+12. **Lokaler HTTP-Testserver für die Telegram Bot API**: reale HTTP-Anfrage, Antwortauswertung, Testnachricht, Outbox und datensparsame Benachrichtigung.
+13. Erreichbarkeitsfehler, maximal vier Versuche, manueller Retry und Löschung ausschließlich technischer Anfragedaten nach 24 Stunden.
+14. Einstellbare Telefonpflicht, ungültige Konfiguration und fehlendes eigenes PDF als Veröffentlichungsblocker.
+
+Die Suite erzeugt ihr Schema durch Alembic. PostgreSQL-Testdatenbank und E2E-Datenbank sind vom lokalen Entwicklungsbestand getrennt. Eine DeprecationWarning aus Starlette/AnyIO ist sichtbar; sie hat keinen Test übersprungen.
+
+## Inhalt der zehn Browserprüfungen
+
+Je fünf Durchläufe auf Desktop und emulierter mobiler Chromium-Ansicht:
+
+- Öffentliche Startseite, CTA, responsive Breite, echte Kontaktannahme und Annahmebestätigung.
+- Adminlogin, anderer Firmenname in geschützter Entwurfsvorschau, Anfragebearbeitung, interner Vermerk, Logout.
+- Immobilienassistent, Bild-Upload, privater gespeicherter Entwurf und öffentlich weiterhin leere Liste.
+- Vollständiger Inseratsassistent bis Veröffentlichung; öffentliches Exposé; Bewerbung mit korrekter Objekt-ID; Modul per Adminoberfläche abschalten, Navigation und API prüfen; wieder aktivieren und Inserat zurückziehen.
+
+Ein mobiler Menüfehler wurde dabei gefunden und korrigiert: Die lange Adminnavigation ist jetzt scrollbar, sodass auch „Abmelden“ erreichbar bleibt. Zusätzliche Testfehler durch zu strikte Select-Locators wurden durch semantische Combobox-Locators behoben; keine Prüfungen wurden dafür entfernt.
+
+## Docker und Cloud-Netzwerk
+
+Der erste Cloud-Build scheiterte an der DNS-Auflösung des Cloudproxies innerhalb der Buildcontainer. Für die lokale Abnahme wurde ein **temporärer, nicht ausgelieferter** Compose-Buildoverride mit Proxy-Hostzuordnung und dem bereits bereitgestellten Cloud-CA-Zertifikat als BuildKit-Secret verwendet. Python/npm verifizierten TLS weiterhin. Es wurden weder Zertifikats- noch Signaturprüfungen abgeschaltet.
+
+Ein anschließend gefundener Dateirechtefehler im API-Image wurde durch `COPY --chown=app:app` behoben. Das ausgelieferte Image läuft als unprivilegierter Benutzer. Die regulären Dockerfiles sind für einen normalen Dockerhost ohne diese Cloud-spezifische Proxyhilfe ausgelegt. Der Validierungsverbund lief getrennt auf Port 3002; die Entwicklung auf Port 3000.
+
+## Nicht behauptete Ergebnisse
+
+- **SMTP extern nicht bestätigt**: zwei Anwendungstests, Port 465/TLS und 587/STARTTLS; Verbindungen vor der Anmeldung abgelehnt. Keine E-Mail angenommen oder zugestellt. Kein weiterer Live-Mailtest gestartet. Telegram ist dagegen mit drei bestätigten Nachrichten live geprüft.
+- Das jetzt gelieferte Original-PDF wurde zusätzlich geprüft: vier Seiten, 27 leere AcroForm-Felder, kein JavaScript, identischer Download-Hash. Synthetische PDF-Fixtures bleiben ausschließlich in Tests.
+- **Keine öffentliche Bereitstellung**, Domain-/TLS-Konfiguration oder Veröffentlichung eines neuen Cloud-Snapshots nachgewiesen.
+- **Keine externe Backupablage eingerichtet**; lokale Verschlüsselung und Restore wurden geprüft.
+- Mobile Browsertests emulieren eine mobile Ansicht in Chromium; kein Test auf einem physischen iPhone/Safari.
+- Template-Manifestprüfung bedeutet keine automatische Kompatibilität mit beliebigem fremden HTML/React.
+- Impressum/Datenschutz sind gekennzeichnete Muster und benötigen rechtliche Prüfung.
+
+## Ergänzte Nachweise dieser Nachprüfung
+
+Neun zusätzliche Backendtests prüfen persistenten Template-Import und Script-Abweisung, Seitenformularziele/-statistik, Kontosperren/letzten Administrator, Passwortänderung/Sitzungswiderruf, atomare deduplizierte Dokumentannahme mit eigenen Jobs, private Modulvorschau, Chunked-Uploadlimit, Umlaut-/Notizensuche mit gefiltertem CSV sowie temporäre Telegram- und permanente SMTP-Fehler. Alle 23 Fälle wurden auf SQLite und echtem PostgreSQL ausgeführt.
+
+Zwei zusätzliche Browserdurchläufe prüfen auf Desktop und Mobilgerät: Manifest importieren, Editorial-Vorschau, Navigation erhält preview=1, Vorschauformulare sind gesperrt, eigene Formularziele speichern und Kontoseite anzeigen. Insgesamt zehn Browserfälle bestanden.
+
+Live: Der vom Benutzer vorgegebene Gruppenchat wurde vor Zustellung geprüft. Eine echte Testnachricht sowie zwei Outbox-Jobs (Kontakt und private PDF-Rückgabe) wurden von Telegram bestätigt. Der identische PDF-Rückgabeversuch erzeugte weder eine zweite Datei noch einen zweiten Zustellauftrag. Keine PDF-Datei wurde an Telegram übertragen. Die E-Mail-Zustellung für die Testserie bleibt deaktiviert; das Empfängerpostfach wurde nicht per IMAP gelesen.
+
+Windows-Hilfe: PowerShell-Syntax und kontrollierte Trockenläufe unter PowerShell im offiziellen Linux-Container bestanden. Geprüft wurden Erstinstallation, zufällige Installationsschlüssel, Erstadmin-Zweig, Wiederholungsstart und Erhalt einer bestehenden .env. Docker wurde dabei simuliert; eine echte Windows-/Docker-Desktop-GUI-Prüfung wird nicht behauptet. Zusätzlich wurden Migrationen und die Erstadmin-Erkennung des tatsächlichen neuen API-Images ohne vorhandenes Konto geprüft.
