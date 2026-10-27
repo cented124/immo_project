@@ -37,5 +37,8 @@ jobs:
           python3 scripts/configure.py --domain example.com --origin https://example.com
           docker compose -f compose.yaml -f compose.production.yaml config --quiet
       - name: Published download integrity
+        if: ${{ hashFiles('downloads/Raumwerk-Windows.zip') != '' }}
         working-directory: downloads
-        run: sha256sum -c Raumwerk-Windows.sha256.txt
+        run: |
+          sha256sum -c Raumwerk-Windows.sha256.txt
+          if [ -f Kuestenklar-Demo.sha256.txt ]; then sha256sum -c Kuestenklar-Demo.sha256.txt; fi

@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-27",
+  "result": "passed",
+  "company": "Küstenklar Immobilien GmbH",
+  "property": {
+    "id": 1,
+    "title": "Sonnenloggia am Beispielkai – SIMULATION",
+    "area": 78,
+    "rooms": 3,
+    "cold_rent": 980,
+    "warm_rent": 1160
+  },
+  "customer": "Lena Muster",
+  "telegram": {
+    "target": "B1 Gruppe",
+    "messages": 1,
+    "attempts": 1,
+    "status": "sent"
+  },
+  "emails": 0,
+  "inquiry": {
+    "id": 1,
+    "property_id": 1,
+    "status": "processing",
+    "note_saved": true,
+    "csv_exported": true
+  },
+  "analytics": {
+    "property_view": 1,
+    "inquiry_click": 1,
+    "submission": 1
+  },
+  "tls": "verified local CA; isolated Docker deployment",
+  "client_admin_denied": true,
+  "pdf_unchanged": true,
+  "mobile_ok": true
+}

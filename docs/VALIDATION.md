@@ -6,7 +6,7 @@ Stand: 27.10.2026. Alle Daten in automatisierten Tests sind ausdrücklich synthe
 | --- | --- |
 | Python-Integrationstests mit temporärem SQLite | **31 bestanden** |
 | Dieselbe Suite mit echtem PostgreSQL 17 (Docker) | **31 bestanden** |
-| Playwright / Chromium – Desktop und mobile Ansicht | **14 bestanden** |
+| Playwright / Chromium – Desktop und mobile Ansicht | **16 bestanden** |
 | TypeScript `tsc --noEmit` | bestanden |
 | Next.js Produktionsbuild | bestanden |
 | `docker compose config --quiet` | bestanden |
@@ -88,3 +88,9 @@ Nicht als geprüft ausgegeben werden ein fremder noch nicht bereitgestellter VPS
 Zusätzliche Abnahme mit gebauten Docker-Images: Ein synthetisches Projekt wurde exportiert, mit restriktiven Host-Dateirechten in ein eigenes API-Image eingebaut und in einem separaten frischen Compose-Projekt mit PostgreSQL gestartet. Bestanden: automatischer Erstimport, Website/öffentliche API/Bild, Authentifizierung, KI-Referenzexport inklusive öffentlichem OpenAPI-Vertrag, erneuter Projektexport aus dem Container, fortlaufende PostgreSQL-Immobilien-ID, echte Anfrageannahme ohne externe Zustelljobs sowie Neustart mit erhaltenen Inhalten und Sitzungen. Die Seeddateien werden beim Build dem App-Benutzer zugeordnet; die API läuft ohne root. Caddy-Konfiguration im offiziellen Container validiert; HTTPS und Redirect sind konfiguriert. Keine öffentliche Kundendomain wurde dafür verwendet.
 
 GitHub Actions ist für Backendtests, Produktionsbuild, Desktop-/Mobiltests, Compose-Konfiguration und Downloadprüfsumme eingerichtet. Ein erfolgreicher GitHub-Lauf wird erst durch den tatsächlichen Status auf GitHub nachgewiesen; lokale Ergebnisse sind davon getrennt.
+
+## Vollständige Nutzersimulation
+
+Am 27.10.2026 wurde der Ablauf mit zwei getrennten Browsersitzungen und der fiktiven Küstenklar Immobilien GmbH vollständig über die Oberfläche durchgespielt: Firmendaten, Seiten, PDF, Immobilienassistent, Prompt/Referenz, eigenes Designpaket, Prüfung/Import/Veröffentlichung und Projektexport. Das Exportprojekt wurde als separate Docker-Installation mit PostgreSQL, Admin und lokalem HTTPS gestartet. Eine zweite Person suchte die Wohnung und stellte eine Objektanfrage; genau eine echte Telegram-Nachricht wurde von der offiziellen API für B1 Gruppe angenommen, Outbox `sent` nach einem Versuch. Anschließend erfolgten Adminprüfung, Notiz, Statusänderung und CSV-Export. Keine E-Mail wurde verschickt. [Bebilderter Nachweis und Demo-Download](SIMULATION.md).
+
+Dabei wurde ein Fehler beim schnellen Wechsel der Integrationstabs gefunden und behoben. Zwei zusätzliche Browserfälle mit bewusst verspäteter Antwort (Desktop/Mobil) sichern ihn ab. Die vollständige Suite mit nun 16 Fällen besteht; der korrigierte Produktionsbuild wurde ebenfalls in der tatsächlichen Simulation verwendet.

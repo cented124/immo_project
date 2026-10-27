@@ -366,6 +366,10 @@
   background: var(--primary);
   color: white;
 }
+.website.hero-split .hero-actions .light-text {
+  color: var(--primary);
+  border-color: currentColor;
+}
 .website.hero-split .hero-contact {
   flex-wrap: wrap;
 }

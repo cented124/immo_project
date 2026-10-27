@@ -1609,38 +1609,45 @@ function Integrations() {
       .then(setDeliveries)
       .catch(() => {});
   useEffect(() => {
+    let active = true;
     setC(null);
     setMsg("");
     api("/admin/integrations/" + channel)
-      .then((v) =>
-        setC(
-          channel === "email"
-            ? {
-                host: "",
-                port: 587,
-                tls: "starttls",
-                username: "",
-                password: "",
-                sender_name: "",
-                sender: "",
-                recipients: [],
-                confirmation: false,
-                ...v,
-              }
-            : {
-                token: "",
-                chat_id: "",
-                include_details: false,
-                types: ["contact", "application"],
-                ...v,
-              },
-        ),
+      .then(
+        (v) =>
+          active &&
+          setC(
+            channel === "email"
+              ? {
+                  host: "",
+                  port: 587,
+                  tls: "starttls",
+                  username: "",
+                  password: "",
+                  sender_name: "",
+                  sender: "",
+                  recipients: [],
+                  confirmation: false,
+                  ...v,
+                }
+              : {
+                  token: "",
+                  chat_id: "",
+                  include_details: false,
+                  types: ["contact", "application"],
+                  ...v,
+                },
+          ),
       )
       .catch((e) => {
+        if (!active) return;
         setMsg(e.message);
         setError(true);
       });
     refresh();
+    return () => {
+      active = false;
+    };
   }, [channel]);
   async function save(test = false) {
     setBusy(true);
@@ -1672,14 +1679,26 @@ function Integrations() {
       <div className="tab-bar">
         <button
           className={channel === "email" ? "active" : ""}
-          onClick={() => setChannel("email")}
+          disabled={busy}
+          onClick={() => {
+            if (channel !== "email") {
+              setC(null);
+              setChannel("email");
+            }
+          }}
         >
           <Mail size={16} />
           E-Mail / SMTP
         </button>
         <button
           className={channel === "telegram" ? "active" : ""}
-          onClick={() => setChannel("telegram")}
+          disabled={busy}
+          onClick={() => {
+            if (channel !== "telegram") {
+              setC(null);
+              setChannel("telegram");
+            }
+          }}
         >
           <Send size={16} />
           Telegram

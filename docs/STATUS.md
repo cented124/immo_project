@@ -15,6 +15,8 @@ Stand: 27.10.2026. Produktname des firmenneutralen Werkzeugs: **Raumwerk**. Must
 
 Aktuelle echte Oberflächenbilder: [Screenshots](screenshots/README.md). Der frühere Zielentwurf bleibt unter `entwuerfe/` dokumentiert. Freier React-Code wird über den Quellcode-/Buildweg angepasst; direktes GUI-Importformat bleibt ein geprüftes Datenpaket, keine beliebige Codeausführung.
 
+Die [vollständige Nutzersimulation](SIMULATION.md) ist erfolgreich abgeschlossen: eigene Musterfirma, Wohnung, selbst erstelltes Design, separates HTTPS-Docker-Deployment, unabhängige Interessentin, genau eine zusätzliche echte Telegram-Objektanfrage an B1 Gruppe und anschließende Adminbearbeitung. Der dabei gefundene Tab-Wechselfehler ist korrigiert; jetzt 16 bestandene Browserfälle. Ein konfiguriertes Demo-Projekt steht auf GitHub zum Download bereit.
+
 ## Externe Voraussetzungen
 
 - Kundeneigenes PDF ist eingebunden: 4 Seiten, 27 leere AcroForm-Felder, kein PDF-JavaScript. Download bytegleich geprüft.

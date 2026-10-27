@@ -11,6 +11,39 @@ async function login(page: any) {
   await expect(page.getByRole("heading", { name: "Übersicht." })).toBeVisible();
 }
 
+test("integration tabs ignore a late response from the previous channel", async ({
+  page,
+}) => {
+  await login(page);
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/admin/integrations/email", async (route) => {
+    const response = await route.fetch();
+    await gate;
+    await route.fulfill({ response });
+  });
+  await page.goto("/admin/integrations");
+  await page.getByRole("button", { name: "Telegram", exact: true }).click();
+  await expect(page.getByLabel(/^Bot-Token/)).toBeVisible();
+  const late = page.waitForResponse((response) =>
+    response.url().endsWith("/admin/integrations/email"),
+  );
+  release();
+  await late;
+  await expect(
+    page.getByRole("switch", { name: /^Immobilienbewerbung benachrichtigen/ }),
+  ).toBeChecked();
+  await page
+    .getByRole("button", { name: "E-Mail / SMTP", exact: true })
+    .click();
+  await expect(page.getByLabel("SMTP-Host", { exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test("template import, safe preview navigation and individual page form settings", async ({
   page,
 }) => {
@@ -378,13 +411,11 @@ test("frontend studio generates an AI package, validates a design and previews i
       heading_scale: 1,
     },
   };
-  await page
-    .getByLabel("Frontend-Designpaket")
-    .setInputFiles({
-      name: "manifest.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(m)),
-    });
+  await page.getByLabel("Frontend-Designpaket").setInputFiles({
+    name: "manifest.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(m)),
+  });
   await page.getByRole("button", { name: "Paket prüfen", exact: true }).click();
   await expect(page.locator(".package-report")).toContainText(
     "KI-Studiodesign",

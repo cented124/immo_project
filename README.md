@@ -18,6 +18,8 @@ Eine selbst hostbare Anwendung für **ein beliebiges Unternehmen und eine Websit
 
 ## Einfacher Start unter Windows
 
+Ein vollständiger Durchlauf mit Musterfirma, Wohnung, eigenem Frontend, Docker-Deployment, echter Telegram-Zustellung und Adminbearbeitung ist unter [Simulation mit Screenshots und Demo-Download](docs/SIMULATION.md) dokumentiert.
+
 Lade das **[Windows-Testpaket direkt von GitHub herunter](https://github.com/cented124/immo_project/raw/refs/heads/main/downloads/Raumwerk-Windows.zip)**, entpacke es und folge [ANLEITUNG-WINDOWS.md](ANLEITUNG-WINDOWS.md). Falls GitHub eine Anmeldung verlangt, melde dich mit dem Konto an, das Zugriff auf dieses Repository hat.
 
 Alternativ auf dieser Repository-Seite **Code → Download ZIP** auswählen. Öffne nach dem Entpacken den Ordner, in dem `STARTEN.cmd` liegt. Nach Installation von Docker Desktop genügt `STARTEN.cmd`; `STOPPEN.cmd` erhält deine Daten. Beide Downloads enthalten vollständigen Quellcode und die leere PDF-Vorlage, aber keine Zugangsdaten oder Kundendatenbanken.

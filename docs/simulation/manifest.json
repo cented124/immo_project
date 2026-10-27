@@ -1,0 +1,33 @@
+{
+  "id": "kuestenklar-kai",
+  "name": "Küstenklar · Kai",
+  "version": 2,
+  "adapter": "editorial",
+  "pages": [
+    "home",
+    "properties",
+    "property",
+    "contact",
+    "disclosure",
+    "content"
+  ],
+  "actions": [
+    "search",
+    "inquiry",
+    "download",
+    "return"
+  ],
+  "theme": {
+    "primary": "#244e45",
+    "accent": "#ab865d",
+    "font": "classic",
+    "background": "#faf8f1",
+    "foreground": "#203a32",
+    "hero_layout": "split",
+    "card_layout": "list",
+    "radius": 14,
+    "content_width": 1200,
+    "spacing": "generous",
+    "heading_scale": 1.05
+  }
+}
