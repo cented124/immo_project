@@ -1,12 +1,12 @@
 # Abgleich mit dem vollständigen ursprünglichen Auftrag
 
-Stand: 26.10.2026. Dieser Abgleich trennt implementierte Funktionen von lokalen Nachweisen, externen Voraussetzungen und ausdrücklich optionalen Erweiterungen.
+Stand: 27.10.2026. Dieser Abgleich trennt implementierte Funktionen von lokalen Nachweisen, externen Voraussetzungen und ausdrücklich optionalen Erweiterungen.
 
 | Ursprünglicher Bereich | Umsetzung / Nachweis | Verbleibender Punkt |
 | --- | --- | --- |
 | Firmenneutraler Baukasten | Firmenidentität vollständig in Konfiguration; separater Produktname Raumwerk. Cloud-Testprofil mit Aurevia eingerichtet, ohne Firmenbindung im Kern. | Individuelle Firmenangaben pflegt der Betreiber. |
 | Next.js, TypeScript, FastAPI, Datenbank, Migrationen, Ablage, Compose | Implementiert; SQLite für Entwicklung, PostgreSQL für Compose; Migrationen 0001 und 0002. | S3 ist eine ausdrücklich optionale Erweiterung; die gewählte v1 verwendet persistente lokale Ablage. |
-| Austauschbares Frontend / Templates | Atelier und Editorial angeschlossen. Manifestprüfung **und persistenter Import mit Bibliothek** ergänzt. Alle Seiten/Aktionen werden geprüft, fremder Code wird nicht ausgeführt. | Ein beliebiges bestehendes HTML-/React-Frontend benötigt weiterhin einen entwickelten Adapter und eigene Nutzungsrechte. Automatische Kompatibilität war ausdrücklich nicht verlangt. |
+| Austauschbares Frontend / Templates | Atelier und Editorial angeschlossen. Manifestprüfung **und persistenter Import mit Bibliothek** ergänzt. Version 2 ermöglicht direkt importierbare Layout-/Theme-Daten. | Ein beliebiges bestehendes HTML-/React-Frontend benötigt weiterhin Einbau, Build, Tests und eigene Nutzungsrechte. Fremder Code wird nicht zur Laufzeit ausgeführt. |
 | Unternehmen, Design, Inhalte, Seiten, Navigation, Footer, SEO | Logo/Favicon, Farben/Schriften, Kontaktdaten, Social Links, Texte/Bilder, Seiten, Abschnitte, Reihenfolge, CTAs und SEO über Admin bearbeitbar. | Individuelle rechtliche Inhalte bleiben Betreiberaufgabe. |
 | Entwurf und Vorschau | Private Konfigurations- und Exposé-Vorschau. Navigation erhält den Vorschaumodus; neue Bilder/PDFs funktionieren privat. Formulare in Vorschauen senden nichts. | Veröffentlichung erfolgt bewusst separat. |
 | Konsistente Modulabschaltung | Öffentliche Seiten, Navigation, APIs und Datei-Freigaben sind gesperrt. Adminnavigation folgt den veröffentlichten Modulen. Eine private Entwurfsvorschau kann ein noch nicht veröffentlichtes Modul prüfen. | Kein bloßes Verstecken von Buttons. |
@@ -29,3 +29,13 @@ Stand: 26.10.2026. Dieser Abgleich trennt implementierte Funktionen von lokalen 
 Login/Einstellungen, Modulabschaltung, Inserat mit Bild, Liste/Detail, Objektbewerbung, Formularziele, lokale SMTP-/Telegram-Testdienste, Zustellfehler/Retry, PDF-Austausch/-Download, private Unterlagen, tatsächliche Analytics, Neustartpersistenz, Zugriffssperren und mobile Bedienung besitzen automatisierte Integrations-/Browsernachweise. Der externe Telegram-Nachweis und das Original-PDF liegen jetzt zusätzlich vor. **Externe SMTP-Annahme ist weiterhin offen**; lokale Tests werden dafür nicht als Ersatz ausgegeben.
 
 POSTIDENT, Zugangsschlösser, digitale Bonitätsprüfung, Portal-Synchronisation, Abrechnung, Mehrmandantenbetrieb und ein Webflow-artiger Editor werden nicht als vorhandene Funktion ausgegeben. Teilweise werden solche Verfahren im gelieferten PDF beschrieben; daraus folgt kein Auftrag, ohne Anbieterzugang oder Geräteanbindung einen funktionierenden Ablauf zu behaupten.
+
+## Zusätzliche Ziele nach GUI-Freigabe
+
+| Ziel | Umsetzung | Grenze / Nachweis |
+| --- | --- | --- |
+| Schöne, einfache GUI | Freigegebenes Frontend-Studio mit Firma/Rechtlichem, KI-Paket, Import, Prüfung und Livegang; Desktop und Mobil. | Echte Screenshots und Browserfälle im Repository. |
+| Fertige Website plus Admin einfach deployen | Projekt-ZIP mit Source, Config, Immobilien und Medien; verifizierter einmaliger Seedimport; Docker, Caddy/HTTPS und LIVE-STARTEN.sh; Domainplan und einfache VPS-Anleitung. | Betreiber stellt VPS, Domain und DNS bereit. Keine Bestellung oder Änderung vorhandenen Hostings. |
+| Firmeninfos → universeller KI-Prompt + Beispiel | Strukturierte Rechts-/Registerdaten, Zielgruppe/Stil/Wünsche; generierter kompletter Vertrag, Referenzquellen, Schemas, Prüfliste und Beispielmanifest als ZIP. | Keine KI-Anbieterbindung. Datenimport unterstützt definierte Theme-/Layoutwerte. Freie React-Änderungen werden als Quellprojekt gebaut und geprüft. |
+| Weitere notwendige Baukastenfunktionen | Vergleich/Wiederherstellung der letzten 100 Konfigurationen, manuelle Layoutregler, Kontrast-/Medienchecks, sichere Importgrenzen, Export ohne echte Anfragen/Geheimnisse, einmaliger Import ohne Überschreiben, produktive Proxy-IP-Vertrauensgrenze. | Vollständige Betriebsbackups bleiben zusätzlich erforderlich; Versionen setzen keine Anfragen oder Konten zurück. |
+| Vorher Skizze zeigen und Freigabe abwarten | Zielentwurf auf Wunsch auf GitHub gestellt. Erst nach ausdrücklicher Freigabe implementiert. | Originalbild und echte Screenshots getrennt dokumentiert. |

@@ -304,3 +304,171 @@ test("publish a listing, submit an associated application, disable the module an
     ).status(),
   ).toBe(404);
 });
+
+test("frontend studio generates an AI package, validates a design and previews its real layout", async ({
+  page,
+}, testInfo) => {
+  await login(page);
+  await page.goto("/admin/studio");
+  await page
+    .getByLabel("Firmenname", { exact: true })
+    .fill("Muster Immobilien GmbH");
+  await page.getByLabel("Rechtsform", { exact: true }).fill("GmbH");
+  await page.getByLabel("Geschäftsführung / Vertretung").fill("Max Mustermann");
+  await page.getByLabel("Anschrift", { exact: true }).fill("Musterstraße 12");
+  await page.getByLabel("Postleitzahl", { exact: true }).fill("20095");
+  await page.getByLabel("E-Mail", { exact: true }).fill("kontakt@example.com");
+  await page
+    .getByLabel("Registergericht", { exact: true })
+    .fill("Amtsgericht Musterstadt");
+  await page.getByLabel("Handelsregisternummer").fill("HRB 12345");
+  await page
+    .getByLabel("Weitere Designwünsche")
+    .fill("Ruhiges Design mit großzügigen Abständen.");
+  await page
+    .getByRole("button", { name: "Prompt erstellen", exact: true })
+    .click();
+  await expect(page.getByLabel("Generierter KI-Prompt")).toContainText(
+    "HRB 12345",
+  );
+  await expect(page.getByRole("status")).toContainText(
+    "Prompt aus dem gespeicherten Firmenprofil",
+  );
+  const kitPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Referenzpaket exportieren" }).click();
+  const kit = await kitPromise;
+  expect(kit.suggestedFilename()).toBe("Raumwerk-KI-Frontend.zip");
+  expect(await kit.failure()).toBe(null);
+  await expect(page.getByRole("status")).toContainText("Referenzpaket");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
+  await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
+  await page.screenshot({
+    path: testInfo.outputPath("frontend-studio.png"),
+    fullPage: true,
+  });
+  const m = {
+    id: "studio-" + Date.now(),
+    name: "KI-Studiodesign",
+    version: 2,
+    adapter: "atelier",
+    pages: [
+      "home",
+      "properties",
+      "property",
+      "contact",
+      "disclosure",
+      "content",
+    ],
+    actions: ["search", "inquiry", "download", "return"],
+    theme: {
+      primary: "#245047",
+      accent: "#ab875d",
+      font: "modern",
+      background: "#f7f9f6",
+      foreground: "#162e27",
+      hero_layout: "split",
+      card_layout: "list",
+      radius: 12,
+      content_width: 1200,
+      spacing: "generous",
+      heading_scale: 1,
+    },
+  };
+  await page
+    .getByLabel("Frontend-Designpaket")
+    .setInputFiles({
+      name: "manifest.json",
+      mimeType: "application/json",
+      buffer: Buffer.from(JSON.stringify(m)),
+    });
+  await page.getByRole("button", { name: "Paket prüfen", exact: true }).click();
+  await expect(page.locator(".package-report")).toContainText(
+    "KI-Studiodesign",
+  );
+  await page.getByRole("button", { name: "Als Entwurf übernehmen" }).click();
+  await expect(page.getByRole("status")).toContainText(
+    "Frontend als Entwurf importiert",
+  );
+  await page.getByRole("button", { name: "Kompatibilität prüfen" }).click();
+  await expect(page.locator(".builder-checks")).toContainText(
+    "Frontend-Vertrag",
+  );
+  await page.goto("/?preview=1");
+  await expect(page.locator(".website.hero-split.cards-list")).toBeVisible();
+  await expect(page.locator(".site-header .brand")).toContainText(
+    "Muster Immobilien",
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
+  await page.screenshot({
+    path: testInfo.outputPath("imported-frontend.png"),
+    fullPage: true,
+  });
+});
+
+test("export wizard downloads a deployable project and versions restore only a draft", async ({
+  page,
+}, testInfo) => {
+  await login(page);
+  await page.goto("/admin/deployment");
+  await page
+    .getByLabel("Deine Domain", { exact: true })
+    .fill("immobilien.example.com");
+  await page.getByRole("button", { name: "Deployment vorbereiten" }).click();
+  await expect(page.locator(".deployment-steps")).toContainText(
+    "immobilien.example.com",
+  );
+  await expect(page.locator(".builder-code")).toContainText(
+    "bash LIVE-STARTEN.sh",
+  );
+  const downloadPromise = page.waitForEvent("download");
+  await page
+    .getByRole("button", { name: "Fertiges Projekt exportieren" })
+    .click();
+  const project = await downloadPromise;
+  expect(project.suggestedFilename()).toBe("Raumwerk-Projekt.zip");
+  expect(await project.failure()).toBe(null);
+  await expect(page.getByRole("status")).toContainText(
+    "Projektpaket exportiert",
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
+  await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
+  await page.screenshot({
+    path: testInfo.outputPath("export-livegang.png"),
+    fullPage: true,
+  });
+  const publicBefore = await (
+    await page.request.get("/api/public/config")
+  ).json();
+  await page.goto("/admin/versions");
+  const compare = page.getByRole("button", {
+    name: "Vergleichen",
+    exact: true,
+  });
+  await expect(compare.first()).toBeVisible();
+  await compare.last().click();
+  await expect(
+    page.getByRole("heading", { name: /Vergleich mit Version/ }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Diese Version als Entwurf wiederherstellen" })
+    .click();
+  await expect(page.getByRole("status")).toContainText(
+    "Version als Entwurf wiederhergestellt",
+  );
+  const publicAfter = await (
+    await page.request.get("/api/public/config")
+  ).json();
+  expect(publicAfter).toEqual(publicBefore);
+});

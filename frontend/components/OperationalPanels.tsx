@@ -177,6 +177,15 @@ export function TemplateLibrary({
   useEffect(() => {
     load();
   }, []);
+  function choose(m: Any) {
+    const { primary, accent, font, ...layout } = m.theme || {};
+    set({
+      ...c,
+      template: m.id,
+      template_adapter: m.adapter,
+      ...(m.theme ? { primary, accent, font, frontend_theme: layout } : {}),
+    });
+  }
   async function importManifest() {
     setBusy(true);
     try {
@@ -187,11 +196,7 @@ export function TemplateLibrary({
       });
       setMessage(r.message);
       await load();
-      set({
-        ...c,
-        template: r.manifest.id,
-        template_adapter: r.manifest.adapter,
-      });
+      choose(r.manifest);
     } catch (e: Any) {
       setMessage(e.message);
     } finally {
@@ -213,11 +218,7 @@ export function TemplateLibrary({
           value={c.template}
           onChange={(e) => {
             const m = templates.find((t) => t.id === e.target.value);
-            set({
-              ...c,
-              template: e.target.value,
-              template_adapter: m?.adapter,
-            });
+            if (m) choose(m);
           }}
         >
           {templates.map((m) => (

@@ -72,6 +72,45 @@ class FormTargets(BaseModel):
         return self
 
 
+class LegalProfile(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_max_length=2000)
+    legal_form: str = ""
+    representative: str = ""
+    postcode: str = ""
+    register_court: str = ""
+    register_number: str = ""
+    vat_id: str = ""
+    supervisory_authority: str = ""
+    professional_rules: str = ""
+    responsible_content: str = ""
+    reviewed: bool = False
+
+
+class FrontendBrief(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_max_length=6000)
+    audience: str = "Eigentümer, Kauf- und Mietinteressenten"
+    style: str = "Klar, hochwertig, zugänglich und persönlich"
+    wishes: str = ""
+
+
+class LayoutTheme(BaseModel):
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    background: str = Field("#f7f9fa", pattern=r"^#[0-9a-fA-F]{6}$")
+    foreground: str = Field("#142736", pattern=r"^#[0-9a-fA-F]{6}$")
+    hero_layout: Literal["cover", "split"] = "cover"
+    card_layout: Literal["grid", "list"] = "grid"
+    radius: int = Field(0, ge=0, le=32)
+    content_width: int = Field(1280, ge=960, le=1600)
+    spacing: Literal["compact", "normal", "generous"] = "normal"
+    heading_scale: float = Field(1, ge=0.8, le=1.3)
+
+
+class Theme(LayoutTheme):
+    primary: str = Field("#173c50", pattern=r"^#[0-9a-fA-F]{6}$")
+    accent: str = Field("#b18b63", pattern=r"^#[0-9a-fA-F]{6}$")
+    font: Literal["modern", "classic"] = "modern"
+
+
 class Config(BaseModel):
     company: str = Field("RAUM & WERT", min_length=1, max_length=100)
     tagline: str = "IMMOBILIEN"
@@ -79,6 +118,9 @@ class Config(BaseModel):
     address: str = ""
     email: str = ""
     phone: str = ""
+    legal: LegalProfile = LegalProfile()
+    frontend_brief: FrontendBrief = FrontendBrief()
+    frontend_theme: LayoutTheme = LayoutTheme()
     logo: str = ""
     favicon: str = ""
     primary: str = "#173c50"

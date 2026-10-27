@@ -1,0 +1,41 @@
+name: Raumwerk checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      DELIVERY_WORKER: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install
+        run: bash scripts/install.sh
+      - name: Backend workflows (isolated, synthetic services)
+        run: PYTHONPATH=backend .venv/bin/pytest backend/tests -q
+      - name: Frontend production build
+        run: npm --prefix frontend run build
+      - name: Browser runtime
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Desktop and mobile workflows
+        run: npm --prefix frontend run test:e2e
+      - name: Compose configuration
+        run: |
+          python3 scripts/configure.py --domain example.com --origin https://example.com
+          docker compose -f compose.yaml -f compose.production.yaml config --quiet
+      - name: Published download integrity
+        working-directory: downloads
+        run: sha256sum -c Raumwerk-Windows.sha256.txt

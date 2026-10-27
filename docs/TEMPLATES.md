@@ -1,4 +1,6 @@
-# Template-Schnittstelle, Version 1
+# Template-Schnittstelle, Version 1 und 2
+
+Das [Frontend-Studio](FRONTEND-STUDIO.md) exportiert einen KI-unabhängigen Prompt, vollständigen Referenzcode, Schemas und Prüfliste. Version 2 ergänzt ein streng validiertes `theme` für direkt importierbare Gestaltung. Farben, Schrift, Hintergrund/Textfarbe, Hero cover/split, Karten grid/list, Rundung, Inhaltsbreite, Abstände und Überschriftengröße werden tatsächlich vom öffentlichen Renderer angewendet. Beim Studio-Import wird das Theme in den Konfigurationsentwurf übernommen; spätere manuelle Änderungen bleiben möglich. Ein Version-2-Manifest ohne Theme ist ungültig; Version 1 verwendet den registrierten Adapter ohne eigenes Theme.
 
 Die Firmenidentität ist Datenbestand, kein Code. Kein Adapter darf Firmenname, Kontaktadressen oder Geheimnisse fest einbauen. Eine Instanz betreibt eine Firma; Designwechsel erhalten Immobilien-IDs, Anfragezuordnungen, URLs, Outbox und Authentifizierung.
 
@@ -21,7 +23,7 @@ Beispiel: `templates/atelier.json`; zweiter durchgängig verbundener Stiladapter
 }
 ```
 
-`POST /api/admin/templates/validate` prüft Schema, Schnittstellenversion, vorhandenen Adapter, alle erforderlichen Seitentypen und Aktionen. `POST /api/admin/templates/import` speichert ein validiertes Manifest dauerhaft in der Datenbank. Es erscheint in der Template-Bibliothek; `template` wählt seine ID und `template_adapter` liefert den registrierten Stiladapter für die Darstellung. Doppelte IDs und zusätzliche Code-/Scriptfelder werden abgewiesen. Import ist auch über eine JSON-Datei im Adminbereich möglich. IDs enthalten ausschließlich Kleinbuchstaben, Zahlen und Bindestriche. Kein ZIP-Upload, kein Dateiextrahieren und kein dynamischer `eval`/`import` aus Benutzerdateien. Die Prüfung ist bewusst **keine Installation fremden Codes**.
+`POST /api/admin/templates/validate` prüft Schema, Schnittstellenversion, vorhandenen Adapter, alle erforderlichen Seitentypen und Aktionen. `POST /api/admin/templates/import` speichert ein validiertes Manifest dauerhaft in der Datenbank. Es erscheint in der Template-Bibliothek; `template` wählt seine ID und `template_adapter` liefert den registrierten Stiladapter. Doppelte IDs und zusätzliche Code-/Scriptfelder werden abgewiesen. IDs enthalten ausschließlich Kleinbuchstaben, Zahlen und Bindestriche. Die Studio-Dateischnittstelle `/api/admin/builder/design/validate` bzw. `/import` akzeptiert JSON oder begrenzte ZIP-Pakete, liest ausschließlich `manifest.json` und extrahiert oder installiert keine Quelltexte. Dort wird das Theme ebenfalls in den Entwurf übernommen. ZIP-Grenzen und Quellcodeweg: [Frontend-Studio](FRONTEND-STUDIO.md). Kein dynamischer `eval`/`import` aus Benutzerdateien. Die Prüfung ist bewusst **keine Installation fremden Codes**.
 
 ## Komponentenvertrag
 

@@ -20,6 +20,7 @@ PostgreSQL ist der vorgesehene Produktionsspeicher. SQLite erleichtert den lokal
 | files | zufällige Datei-ID, Typ, Verwendung, Objekt-/Anfragezuordnung, Größe |
 | events | Ereignistyp, begrenzter Seitenpfad, Zeitpunkt; keine IP, Cookies oder Nutzer-ID |
 | audit | Akteur, Verwaltungsaktion, Zeitpunkt; keine Anfrageinhalte/Zugangsdaten |
+| revisions | letzte 100 Konfigurationsstände, Bezeichnung, Akteur, Zeitpunkt; Vergleich und Wiederherstellung als Entwurf |
 
 Objektinhalte bleiben flexibel als JSON, werden jedoch für jeden Schreibzugriff durch `PropertyData` validiert. Zustands- und Identitätsfelder liegen separat für Integrität/Fremdschlüssel vor. Künftig geänderte Verträge benötigen neue Migrationen und gegebenenfalls JSON-Datenmigrationen.
 
@@ -32,6 +33,10 @@ Anfragen: `new`, `processing`, `answered`, `closed`. Standardziel ist dauerhafte
 Outbox: `pending → sent` oder `retry → failed`. Ein Testversand läuft synchron und liefert nur dann Erfolg, wenn der Testserver die Nachricht annimmt. Automatische Zustellversuche laufen unabhängig von der ursprünglichen HTTP-Anfrage.
 
 Konfiguration: `draft` bleibt privat; `publish` validiert PDF, Medien, Integrationseinstellungen und Module und ersetzt erst dann den öffentlichen Stand. Vorschau braucht eine bestehende Adminsitzung und ist kein öffentlicher Freigabelink.
+
+Das Frontend-Studio ergänzt strukturierte Rechtstexte/Firmendaten, ein privates KI-Briefing und das versionierte Layoutschema. Direkt importierte Themes werden in den Entwurf übernommen; ausführbarer Fremdcode wird nicht importiert. Das KI-Paket enthält die vollständigen Quellen und tatsächlichen öffentlichen OpenAPI-Definitionen für frei entwickelte Anpassungen samt Build-/Testvertrag.
+
+Projektexport und Betriebsbackup sind getrennt: Der Export enthält Programmcode, beide Konfigurationsstände, Immobilien und zugeordnete Medien mit SHA-256-Prüfsummen. Seeddateien werden im Zielimage mit App-Eigentümer nach `/seed` kopiert und nach Migration einmalig in eine frische Datenbank und `/data/files` übernommen. Ein Datenbankmarker verhindert Überschreiben beim Neustart; PostgreSQL-Sequenzen werden fortgeführt. Anfragen, Benutzer und Geheimnisse werden nicht exportiert; externe Formularziele werden beim Export auf Adminspeicherung umgestellt. Das Backup sichert dagegen den vollständigen laufenden Betrieb einschließlich Schlüssel.
 
 ## Analytics: Definitionen
 

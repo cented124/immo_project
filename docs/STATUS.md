@@ -1,6 +1,6 @@
 # Fortsetzbarer Umsetzungsstand
 
-Stand: 26.10.2026. Produktname des firmenneutralen Werkzeugs: **Raumwerk**. Musteridentität der öffentlichen Website: austauschbares „RAUM & WERT“. Kein Aurevia-spezifischer Datenbank-/Backendcode.
+Stand: 27.10.2026. Produktname des firmenneutralen Werkzeugs: **Raumwerk**. Musteridentität der öffentlichen Website: austauschbares „RAUM & WERT“. Kein Aurevia-spezifischer Datenbank-/Backendcode.
 
 ## Umgesetzt
 
@@ -10,6 +10,10 @@ Stand: 26.10.2026. Produktname des firmenneutralen Werkzeugs: **Raumwerk**. Must
 4. Anfragen: Kontakt/Bewerbung, serverseitige Objektzuordnung, konfigurierbare Ziele, Idempotenz, Ratelimits, Outbox, SMTP/Telegram, Tests, Wiederholungen, CSV, Status, Notizen und Löschung.
 5. PDF: Vorlagen-Upload/Austausch, modulabhängiger Download, optionale private Rückgabe mit Anfragezuordnung; kein erfundenes Kunden-PDF.
 6. Analytics/Betrieb: tatsächliche Ereignisse, Dashboard, Änderungsprotokoll, Docker Compose, Konfigurationserzeugung, Installations-/Betriebs-/Template-/Backup-Dokumentation.
+7. Freigegebener GUI-Entwurf umgesetzt: Firma & Rechtliches, Frontend-Studio, KI-Prompt und komplettes Referenzprojekt, versionierter sicherer Designimport mit tatsächlich angewendeten Layoutwerten, Kontrast-/Medienprüfung, manuelle Layoutregler, Konfigurationsvergleich und Wiederherstellung.
+8. Vollständiger Projektexport mit veröffentlichtem Stand und Entwurf, allen Immobilien und zugeordneten Medien, einmaliger verifizierter Datenübernahme in frische Instanzen, VPS-/DNS-Assistent, Caddy/HTTPS, Live-Startprogramm und lesender HTTPS-Prüfhelfer. Kein Export echter Anfragen, ausgefüllter PDFs, Benutzer oder Geheimnisse.
+
+Aktuelle echte Oberflächenbilder: [Screenshots](screenshots/README.md). Der frühere Zielentwurf bleibt unter `entwuerfe/` dokumentiert. Freier React-Code wird über den Quellcode-/Buildweg angepasst; direktes GUI-Importformat bleibt ein geprüftes Datenpaket, keine beliebige Codeausführung.
 
 ## Externe Voraussetzungen
 

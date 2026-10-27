@@ -1,0 +1,26 @@
+# Start together with compose.yaml. Only Caddy is exposed publicly.
+services:
+  api:
+    environment:
+      PUBLIC_ORIGIN: https://${DOMAIN:?Set DOMAIN in .env}
+      COOKIE_SECURE: "1"
+      TRUST_PROXY_HEADERS: "1"
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_started
+volumes:
+  caddy_data:
+  caddy_config:

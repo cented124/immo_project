@@ -59,3 +59,30 @@ export const labels: Record<string, string> = {
   telegram: "Telegram",
   confirmation: "Bestätigung",
 };
+
+export async function download(path: string, name: string, body?: unknown) {
+  const response = await fetch("/api" + path, {
+    method: body === undefined ? "GET" : "POST",
+    headers: {
+      "X-Requested-With": "Raumwerk",
+      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!response.ok) {
+    let message = "Download fehlgeschlagen. Bitte erneut versuchen.";
+    try {
+      const data = await response.json();
+      if (typeof data.detail === "string") message = data.detail;
+    } catch {}
+    throw new Error(message);
+  }
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}

@@ -1,10 +1,11 @@
-import csv, hashlib, io, json, os, re, secrets, threading, time, warnings
+import csv, hashlib, io, json, os, re, secrets, threading, time, warnings, ipaddress
 from contextlib import asynccontextmanager
 from datetime import timedelta, timezone
 from typing import Literal
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request, Response, Depends, UploadFile, Form
 from fastapi.responses import FileResponse
+from starlette.background import BackgroundTask
 from pydantic import BaseModel, EmailStr, Field, model_validator
 from sqlalchemy import select, func, delete
 from sqlalchemy.exc import IntegrityError
@@ -21,6 +22,7 @@ from .db import (
     File,
     Event,
     Audit,
+    Revision,
     DATA,
     now,
 )
@@ -29,6 +31,16 @@ from .security import hasher, digest, encrypt, document_token
 from .delivery import integration, send_email, send_telegram, safe_error, worker
 from .templates import Manifest, library, resolve, presentation
 from .uploads import BodySizeLimit
+from .builder import (
+    add_revision,
+    check_config,
+    prompt,
+    reference_zip,
+    imprint,
+    parse_design,
+    domain_name,
+)
+from .project import export_project
 
 
 def initialize():
@@ -83,9 +95,19 @@ _limits = {}
 _limit_lock = threading.Lock()
 
 
+def client_ip(request):
+    # Only the production Caddy topology enables this. Caddy overwrites X-Real-IP;
+    # API and Next are not publicly exposed. Ordinary development ignores it.
+    if os.getenv("TRUST_PROXY_HEADERS", "0") == "1":
+        try:
+            return str(ipaddress.ip_address(request.headers.get("x-real-ip", "")))
+        except ValueError:
+            pass
+    return request.client.host if request.client else "local"
+
+
 def limit(request, bucket, maximum=12, seconds=600):
-    # Deliberately ignore untrusted X-Forwarded-For; configure trusted proxies at deployment.
-    key = (request.client.host if request.client else "local", bucket)
+    key = (client_ip(request), bucket)
     with _limit_lock:
         if len(_limits) > 10000:
             for k in list(_limits):
@@ -152,7 +174,9 @@ class Login(BaseModel):
 
 @app.post("/api/admin/login")
 def login(data: Login, request: Request, response: Response, db=Depends(db_session)):
-    limit(request, "login", 8)
+    limit(request, "login-ip", 60)
+    bucket = "login:" + data.email.lower()
+    limit(request, bucket, 8)
     user = db.scalar(select(User).where(User.email == data.email.lower()))
     try:
         if not user:
@@ -163,6 +187,8 @@ def login(data: Login, request: Request, response: Response, db=Depends(db_sessi
         raise HTTPException(401, "E-Mail oder Passwort ist nicht korrekt")
     if not user or not user.active:
         raise HTTPException(401, "E-Mail oder Passwort ist nicht korrekt")
+    with _limit_lock:
+        _limits.pop((client_ip(request), bucket), None)
     token = secrets.token_urlsafe(48)
     db.add(
         LoginSession(
@@ -325,7 +351,9 @@ def template_help(user=Depends(current)):
 
 @app.get("/api/public/config")
 def public_config(db=Depends(db_session)):
-    return presentation(db, cfg(db))
+    data = presentation(db, cfg(db))
+    data.pop("frontend_brief", None)
+    return data
 
 
 @app.get("/api/admin/config")
@@ -339,7 +367,10 @@ def get_config(user=Depends(current), db=Depends(db_session)):
 @app.put("/api/admin/config")
 def save_config(data: Config, user=Depends(admin), db=Depends(db_session)):
     resolve(db, data.template)
+    if not db.scalar(select(Revision.id).limit(1)):
+        add_revision(db, user, cfg(db), "published", "Ausgangsstand")
     db.get(Setting, "draft").value = data.model_dump()
+    add_revision(db, user, data.model_dump())
     audit(db, user, "Konfigurationsentwurf gespeichert")
     db.commit()
     return presentation(db, data.model_dump())
@@ -367,6 +398,7 @@ def publish_config(user=Depends(admin), db=Depends(db_session)):
         if not file or file.purpose != "template":
             raise HTTPException(422, "PDF nicht gefunden")
     db.get(Setting, "published").value = config.model_dump()
+    add_revision(db, user, config.model_dump(), "published", "Veröffentlicht")
     audit(db, user, "Website-Konfiguration veröffentlicht")
     db.commit()
     return {"ok": True}
@@ -1322,3 +1354,181 @@ def import_template(data: Manifest, user=Depends(admin), db=Depends(db_session))
         "manifest": data,
         "message": "Template importiert und im Baukasten auswählbar. Fremder Code wurde nicht ausgeführt.",
     }
+
+
+@app.get("/api/admin/builder/prompt")
+def frontend_prompt(user=Depends(admin), db=Depends(db_session)):
+    return {"prompt": prompt(db.get(Setting, "draft").value)}
+
+
+@app.get("/api/admin/builder/reference")
+def frontend_reference(user=Depends(admin), db=Depends(db_session)):
+    return Response(
+        reference_zip(db.get(Setting, "draft").value, app.openapi()),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": 'attachment; filename="Raumwerk-KI-Frontend.zip"'
+        },
+    )
+
+
+@app.get("/api/admin/builder/imprint")
+def frontend_imprint(user=Depends(admin), db=Depends(db_session)):
+    return {"text": imprint(db.get(Setting, "draft").value)}
+
+
+@app.get("/api/admin/builder/check")
+def frontend_check(user=Depends(admin), db=Depends(db_session)):
+    return check_config(db, db.get(Setting, "draft").value)
+
+
+async def design_upload(file):
+    data = await file.read(10 * 1024 * 1024 + 1)
+    if len(data) > 10 * 1024 * 1024:
+        raise HTTPException(413, "Designpaket maximal 10 MB")
+    return parse_design(data, file.filename or "manifest.json")
+
+
+@app.post("/api/admin/builder/design/validate")
+async def check_design(file: UploadFile, user=Depends(admin), db=Depends(db_session)):
+    m = await design_upload(file)
+    available = not any(x["id"] == m.id for x in library(db))
+    return {
+        "valid": True,
+        "available": available,
+        "manifest": m,
+        "message": "Seiten, Aktionen und Theme geprüft. Quellcode im Referenzordner wird nicht ausgeführt."
+        if available
+        else "Diese ID ist bereits vorhanden. Die KI muss eine neue ID vergeben.",
+    }
+
+
+@app.post("/api/admin/builder/design/import", status_code=201)
+async def install_design(file: UploadFile, user=Depends(admin), db=Depends(db_session)):
+    m = await design_upload(file)
+    if any(x["id"] == m.id for x in library(db)):
+        raise HTTPException(409, "Diese Frontend-ID ist bereits vorhanden")
+    c = Config.model_validate(db.get(Setting, "draft").value)
+    c.template = m.id
+    if m.theme:
+        c.primary, c.accent, c.font = m.theme.primary, m.theme.accent, m.theme.font
+        c.frontend_theme = type(c.frontend_theme).model_validate(
+            m.theme.model_dump(exclude={"primary", "accent", "font"})
+        )
+    db.add(Setting(key="template_" + m.id, value=m.model_dump()))
+    db.get(Setting, "draft").value = c.model_dump()
+    add_revision(db, user, c.model_dump(), "import", "Frontend importiert: " + m.name)
+    audit(db, user, "Frontend-Datenpaket importiert: " + m.id)
+    db.commit()
+    return {
+        "config": presentation(db, c.model_dump()),
+        "message": "Frontend als Entwurf importiert. Vorschau prüfen, danach veröffentlichen.",
+    }
+
+
+class DeploymentPlan(BaseModel):
+    domain: str = ""
+
+
+def validate_domain(value):
+    try:
+        return domain_name(value) if value else ""
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+
+
+@app.post("/api/admin/builder/deployment")
+def deployment_plan(data: DeploymentPlan, user=Depends(admin)):
+    domain = validate_domain(data.domain)
+    if not domain:
+        raise HTTPException(422, "Bitte deine Domain eintragen")
+    return {
+        "domain": domain,
+        "url": "https://" + domain,
+        "admin_url": "https://" + domain + "/admin",
+        "steps": [
+            "VPS mit Ubuntu 24.04 LTS, mindestens 2 CPU, 4 GB RAM und Docker Compose bereitstellen.",
+            f"A-Eintrag für {domain} auf die öffentliche IPv4 des VPS setzen. AAAA nur bei funktionierendem IPv6.",
+            "TCP 80 und 443 freigeben. SSH-Zugang absichern. Keine Datenbankports öffnen.",
+            "Projektpaket herunterladen, auf den VPS kopieren und entpacken.",
+            "Im Ordner Raumwerk: bash LIVE-STARTEN.sh. Domain bestätigen, Administrator anlegen.",
+            "Caddy richtet HTTPS automatisch ein, sobald DNS und Ports stimmen. Website und /admin prüfen.",
+            "Integrationen neu einrichten, Formrouting veröffentlichen und einen bewussten Test durchführen. Backups einrichten.",
+        ],
+        "command": "bash LIVE-STARTEN.sh",
+        "note": "Dein VPS ist das Hosting. Domain und VPS müssen vorhanden sein; dieses Formular bestellt keinen Server und ändert kein DNS.",
+    }
+
+
+@app.post("/api/admin/builder/project")
+def project_export(data: DeploymentPlan, user=Depends(admin), db=Depends(db_session)):
+    domain = validate_domain(data.domain)
+    try:
+        path = export_project(db, domain)
+    except ValueError:
+        raise HTTPException(
+            422,
+            "Projekt nicht exportierbar. Verknüpfte Medien, PDF-Modul und gespeicherten Entwurf prüfen.",
+        )
+    audit(db, user, "Projektpaket exportiert (ohne Zugänge und Anfragen)")
+    db.commit()
+    return FileResponse(
+        path,
+        media_type="application/zip",
+        filename="Raumwerk-Projekt.zip",
+        background=BackgroundTask(Path(path).unlink, missing_ok=True),
+    )
+
+
+@app.get("/api/admin/builder/versions")
+def config_versions(user=Depends(admin), db=Depends(db_session)):
+    current_config = Config.model_validate(db.get(Setting, "draft").value).model_dump()
+    return [
+        {
+            "id": r.id,
+            "label": r.label,
+            "kind": r.kind,
+            "actor": r.actor,
+            "created": r.created,
+            "changed_fields": [
+                k for k in current_config if current_config[k] != r.config.get(k)
+            ],
+        }
+        for r in db.scalars(select(Revision).order_by(Revision.id.desc()).limit(100))
+    ]
+
+
+@app.get("/api/admin/builder/versions/{rid}")
+def config_version(rid: int, user=Depends(admin), db=Depends(db_session)):
+    r = db.get(Revision, rid)
+    if not r:
+        raise HTTPException(404, "Version nicht gefunden")
+    c = Config.model_validate(db.get(Setting, "draft").value).model_dump()
+    saved = Config.model_validate(r.config).model_dump()
+    return {
+        "id": r.id,
+        "label": r.label,
+        "changes": [
+            {"field": k, "current": c[k], "saved": saved[k]}
+            for k in c
+            if c[k] != saved[k]
+        ],
+    }
+
+
+@app.post("/api/admin/builder/versions/{rid}/restore")
+def restore_config_version(rid: int, user=Depends(admin), db=Depends(db_session)):
+    r = db.get(Revision, rid)
+    if not r:
+        raise HTTPException(404, "Version nicht gefunden")
+    config = Config.model_validate(r.config).model_dump()
+    check_config(db, config)
+    # Preserve both sides: rollback restores a draft, never silently publishes.
+    add_revision(
+        db, user, db.get(Setting, "draft").value, "checkpoint", "Vor Wiederherstellung"
+    )
+    db.get(Setting, "draft").value = config
+    add_revision(db, user, config, "restore", "Wiederhergestellt: Version " + str(rid))
+    audit(db, user, "Konfiguration als Entwurf wiederhergestellt: " + str(rid))
+    db.commit()
+    return presentation(db, config)

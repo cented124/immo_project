@@ -37,6 +37,9 @@ import {
   Layers,
   MoveUp,
   MoveDown,
+  FileCode2,
+  History,
+  Rocket,
 } from "lucide-react";
 import { api, money, labels } from "./api";
 import {
@@ -45,6 +48,7 @@ import {
   TemplateLibrary,
   FormRouting,
 } from "./OperationalPanels";
+import { FrontendStudio, DeploymentPanel, VersionPanel } from "./BuilderPanels";
 type Any = any;
 export default function Admin({ tab }: { tab: string }) {
   const [user, setUser] = useState<Any>(undefined),
@@ -94,6 +98,15 @@ export default function Admin({ tab }: { tab: string }) {
     );
   const navigation = [
     { id: "dashboard", title: "Übersicht", icon: LayoutDashboard },
+    ...(user.role === "admin"
+      ? [
+          { id: "company", title: "Firma & Rechtliches", icon: Building2 },
+          { id: "studio", title: "Frontend-Studio", icon: FileCode2 },
+          { id: "design", title: "Design & Medien", icon: Palette },
+          { id: "pages", title: "Seiten & Inhalte", icon: Layers },
+          { id: "modules", title: "Module & Formulare", icon: Blocks },
+        ]
+      : []),
     {
       id: "properties",
       title: "Immobilien",
@@ -104,10 +117,9 @@ export default function Admin({ tab }: { tab: string }) {
     { id: "documents", title: "Dokumente", icon: FileText },
     ...(user.role === "admin"
       ? [
-          { id: "design", title: "Website gestalten", icon: Palette },
-          { id: "pages", title: "Seiten & Inhalte", icon: Layers },
-          { id: "modules", title: "Module & Formulare", icon: Blocks },
           { id: "integrations", title: "Integrationen", icon: PlugZap },
+          { id: "deployment", title: "Export & Livegang", icon: Rocket },
+          { id: "versions", title: "Versionen", icon: History },
           { id: "settings", title: "Einstellungen", icon: Settings },
         ]
       : []),
@@ -191,7 +203,7 @@ export default function Admin({ tab }: { tab: string }) {
           </div>
           <div>
             <span className="live-dot" />
-            Lokaler Arbeitsbereich
+            Ihr Arbeitsbereich
             <Link className="small-button" href="/" target="_blank">
               <Eye size={14} />
               Website ansehen <ArrowUpRight size={13} />
@@ -217,6 +229,13 @@ export default function Admin({ tab }: { tab: string }) {
                         "Von der ersten Idee zum veröffentlichten Exposé.",
                       inquiries: "Aus Interesse werden gute Verbindungen.",
                       design: "Ihre Identität. Ihr Auftritt. Ihre Website.",
+                      company: "Ihre Firmendaten. Für Website und KI-Prompt.",
+                      studio:
+                        "Deine Firmendaten. Dein KI-Briefing. Ein kompatibles Frontend.",
+                      deployment:
+                        "Ihre Website und Ihr Adminbereich. Auf Ihrem eigenen Server.",
+                      versions:
+                        "Änderungen vergleichen und einen früheren Stand zurückholen.",
                       pages:
                         "Geben Sie Ihrer Website Struktur und Persönlichkeit.",
                       modules:
@@ -261,6 +280,17 @@ export default function Admin({ tab }: { tab: string }) {
             />
           ) : user.role === "admin" && tab === "design" ? (
             <Design config={config} setConfig={setConfig} />
+          ) : user.role === "admin" &&
+            (tab === "studio" || tab === "company") ? (
+            <FrontendStudio
+              config={config}
+              setConfig={setConfig}
+              companyOnly={tab === "company"}
+            />
+          ) : user.role === "admin" && tab === "deployment" ? (
+            <DeploymentPanel />
+          ) : user.role === "admin" && tab === "versions" ? (
+            <VersionPanel config={config} setConfig={setConfig} />
           ) : user.role === "admin" && tab === "pages" ? (
             <Pages config={config} setConfig={setConfig} />
           ) : user.role === "admin" && tab === "modules" ? (

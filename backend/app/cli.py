@@ -7,9 +7,27 @@ from .main import initialize
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["create-admin", "admin-exists"])
+    parser.add_argument(
+        "command", choices=["create-admin", "admin-exists", "import-project"]
+    )
     parser.add_argument("--email")
+    parser.add_argument("--path", default="/seed/project.json")
     args = parser.parse_args()
+    if args.command == "import-project":
+        from .project import import_project
+
+        try:
+            changed = import_project(args.path)
+        except (ValueError, OSError):
+            raise SystemExit(
+                "Projektimport abgebrochen: Projekt/Medien ungültig oder Ziel nicht leer. Vorhandene Daten bleiben erhalten."
+            )
+        print(
+            "Projekt importiert."
+            if changed
+            else "Kein neuer Projektimport erforderlich."
+        )
+        return
     if args.command == "admin-exists":
         initialize()
         with Session() as db:

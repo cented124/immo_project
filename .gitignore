@@ -19,3 +19,7 @@ data/
 test-results/
 playwright-report/
 *.tsbuildinfo
+# Assembled project data is exported deliberately, never committed.
+/project/*
+!/project/README.md
+/deployment.json

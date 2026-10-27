@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-export DATA_DIR="$PWD/.local/e2e"
+mkdir -p .local
+export DATA_DIR
+DATA_DIR=$(mktemp -d "$PWD/.local/e2e-run-XXXXXX")
 export DATABASE_URL="sqlite:///$DATA_DIR/app.db"
 export PYTHONPATH="$PWD/backend"
 export PUBLIC_ORIGIN=http://localhost:3001
 export API_INTERNAL_URL=http://127.0.0.1:8001
 export NEXT_DIST_DIR=.next-e2e
 export NEXT_TELEMETRY_DISABLED=1
+export DELIVERY_WORKER=0
 mkdir -p "$DATA_DIR"
 .venv/bin/alembic -c backend/alembic.ini upgrade head
 .venv/bin/python - <<'PY'

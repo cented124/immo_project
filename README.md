@@ -5,6 +5,8 @@ Eine selbst hostbare Anwendung für **ein beliebiges Unternehmen und eine Websit
 ## Was enthalten ist
 
 - Next.js 16 / React 19 / TypeScript: responsive Website, geschützter Adminbereich, Template „Atelier“ und zweiter Adapter „Editorial“.
+- Frontend-Studio mit Firmen-/Registerdaten, KI-unabhängigem Prompt, exportierbarem vollständigem Referenzprojekt, versioniertem Designimport, Vorschau und Prüfung.
+- Konfigurationsvergleich und Wiederherstellung; fertiger Projektexport inklusive Inhalten/Medien und geführtem VPS-Livegang mit Caddy/HTTPS.
 - FastAPI, SQLAlchemy, Alembic; PostgreSQL 17 im Compose-Betrieb. SQLite als bewusst einfache lokale Entwicklungsoption.
 - Konfigurationsentwurf, authentifizierte Vorschau und explizite Veröffentlichung. Module sperren Darstellung **und öffentliche API-/Dateizugriffe**.
 - Login mit Argon2id, serverseitige Sitzungen, Administrator-/Mitarbeiterrollen.
@@ -47,7 +49,7 @@ docker compose exec api python -m app.cli create-admin --email sie@unternehmen.d
 
 `configure.py` erzeugt einmalig eine `.env` mit zufälligem Datenbankpasswort und Fernet-Schlüssel und überschreibt keine bestehende Datei. Die Datenbankmigration läuft beim Backendstart. Persistente Volumes: `database` und `files`. Nur die Website wird an `127.0.0.1:3000` gebunden; weder PostgreSQL noch das Backend besitzen im Compose-Betrieb einen öffentlichen Host-Port.
 
-Für eine echte Domain: `.env` mit der exakten HTTPS-Origin erzeugen (z. B. `--origin https://immobilien.ihre-firma.de`), HTTPS-Reverse-Proxy vor Port 3000 setzen, sichere Cookies (`COOKIE_SECURE=1`) verwenden. Proxy-Uploadlimit auf 12 MB setzen, Request-Timeout auf mindestens 30 Sekunden. Hinter dem Reverse-Proxy untrusted Forwarded-Header entfernen. Die Anwendung nutzt bewusst keine ungeprüften Client-IP-Header. Ohne korrekt vertrauenswürdig konfigurierte Proxykette teilen Requests am Backend ein IP-Limit; siehe Betriebsgrenzen.
+Für eine echte Domain: **Export & Livegang** im Admin öffnen und der [VPS-Anleitung](docs/DEPLOYMENT.md) folgen. `bash LIVE-STARTEN.sh` startet zusätzlich Caddy mit automatischem HTTPS. Die mitgelieferte Produktionskonfiguration überschreibt Client-IP-Header am öffentlichen Proxy und vertraut ihnen ausschließlich in der internen API. Bei einer eigenen Proxykonfiguration gelten die [Betriebsgrenzen](docs/OPERATIONS.md).
 
 ```bash
 docker compose logs --tail=50 api web
@@ -59,14 +61,18 @@ docker compose restart api web
 
 ## Erste Einrichtung ohne Programmierung
 
-1. Unter `/admin` anmelden. **Website gestalten**: Firmenidentität, Logo, Favicon, Farben, Schriftstil und Template einstellen.
+1. Unter `/admin` anmelden. **Firma & Rechtliches**: Unternehmensprofil einschließlich Registerdaten und Rechtstexten eintragen. **Design & Medien**: Logo, Farben, Schrift und Bilder einstellen.
 2. **Seiten & Inhalte**: Startseite, Titelbild, Leistungen, Vorstellung, Seiten, Navigation, Footer und SEO anpassen. Abschnitte verschieben und ausblenden.
 3. **Entwurf speichern**, anschließend **Entwurf ansehen**. Veröffentlichung ist ein separater Schritt.
 4. **Module & Formulare**: benötigte Funktionen aktivieren und pro Kontakt-/Bewerbungsformular Speicher- und Zustellziele wählen. Ohne dauerhaftes Speichern werden technische Zustelldaten nach höchstens 24 Stunden gelöscht.
 5. **Integrationen** einrichten und testen. Ohne SMTP/Telegram funktioniert die Speicherung im Adminbereich bereits.
 6. **Immobilien**: Entwurf anlegen, echte Angaben und eigene Bilder ergänzen, gespeichertes Exposé prüfen und veröffentlichen. Der Assistent prüft fehlende Veröffentlichungsangaben.
 7. **Dokumente**: Ihr eigenes Selbstauskunft-PDF hochladen und anschließend das Modul einschalten. Sichere Rückgabe nur bei Bedarf separat aktivieren.
-8. **Einstellungen**: Impressum und Datenschutzhinweise vollständig erstellen und fachlich/rechtlich prüfen. Empfänger und Aufbewahrung müssen zum tatsächlichen Betrieb passen.
+8. **Firma & Rechtliches**: Impressum und Datenschutz fachlich/rechtlich prüfen; unter Einstellungen die Aufbewahrung festlegen. Empfänger und Aufbewahrung müssen zum tatsächlichen Betrieb passen.
+
+Für KI-Designs öffne das **Frontend-Studio**: Firmendaten → Prompt und Referenzpaket → Design importieren → prüfen → veröffentlichen. Direkt importierbare Pakete steuern den bestehenden Renderer; freie React-Quelltexte aus dem vollständigen Referenzprojekt benötigen Einbau, Build und Tests. Details: [Frontend-Studio](docs/FRONTEND-STUDIO.md). Gespeicherte Konfigurationen können unter **Versionen** verglichen und als Entwurf wiederhergestellt werden.
+
+**Export & Livegang** erzeugt das vollständige neue Projekt mit veröffentlichtem Stand, gespeichertem Entwurf, allen Immobilien und zugeordneten Medien. Der Erststart übernimmt diese Daten einmalig in die frische Instanz. Nutzer, echte Anfragen, ausgefüllte Selbstauskünfte und Geheimnisse werden nicht exportiert; Kontakte werden am Ziel zunächst im Admin gespeichert. Vollständige Betriebsumzüge bleiben Aufgabe des verschlüsselten Backups.
 
 Mitarbeiter können Immobilien, Anfragen und private Unterlagen verwalten, aber keine Integrationseinstellungen, Benutzer oder Sicherheits-/Websitekonfiguration ändern. Benutzer werden unter **Einstellungen** angelegt.
 

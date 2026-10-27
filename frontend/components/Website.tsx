@@ -218,9 +218,17 @@ export default function Website({
   return (
     <PreviewContext.Provider value={preview}>
       <div
-        className={`website ${c.template_adapter || c.template} ${c.font}`}
+        className={`website ${c.template_adapter || c.template} ${c.font} hero-${c.frontend_theme?.hero_layout || "cover"} cards-${c.frontend_theme?.card_layout || "grid"} spacing-${c.frontend_theme?.spacing || "normal"}`}
         style={
-          { "--primary": c.primary, "--accent": c.accent } as CSSProperties
+          {
+            "--primary": c.primary,
+            "--accent": c.accent,
+            "--site-background": c.frontend_theme?.background || "#f7f9fa",
+            "--site-foreground": c.frontend_theme?.foreground || "#142736",
+            "--site-radius": `${c.frontend_theme?.radius || 0}px`,
+            "--site-width": `${c.frontend_theme?.content_width || 1280}px`,
+            "--site-heading-scale": c.frontend_theme?.heading_scale || 1,
+          } as CSSProperties
         }
       >
         {preview && (

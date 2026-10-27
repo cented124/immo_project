@@ -24,7 +24,13 @@ Der Browser öffnet sich automatisch. Melde dich mit dem eben erstellten Adminis
 
 ## 5. Deine Firma einstellen
 
-Klicke links auf **Website gestalten**. Trage Firmenname, Logo, E-Mail, Telefonnummer und Farben ein. Du kannst Aurevia oder jede andere Firma eintragen. Unter **Seiten & Inhalte** bearbeitest du Texte und Navigation. Wähle **Entwurf speichern**, prüfe **Entwurf ansehen** und klicke erst anschließend auf **Veröffentlichen**.
+Klicke links auf **Firma & Rechtliches**. Trage Firmenname, Anschrift, Kontakt, Rechtsform, Vertretung und die für deine Firma zutreffenden Registerdaten ein. Ergänze und prüfe Impressum und Datenschutz. Du kannst Aurevia oder jede andere Firma eintragen. Wähle **Entwurf speichern**.
+
+Unter **Design & Medien** stellst du Logo, Farben und Bilder ein; unter **Seiten & Inhalte** Texte und Navigation. Das **Frontend-Studio** verbindet die Schritte: Vorschau öffnen, Daten prüfen und anschließend **Veröffentlichen**.
+
+Wenn eine KI das Design erstellen soll: Im **Frontend-Studio** Zielgruppe und Stil eintragen, **Prompt erstellen** und **Referenzpaket exportieren** anklicken. Gib der gewünschten KI den Prompt und das ZIP. Das erzeugte `manifest.json` im Studio auswählen, **Paket prüfen**, **Als Entwurf übernehmen**, Vorschau prüfen und veröffentlichen. Für freie Änderungen am React-Quellcode gelten die Build- und Testschritte in [docs/FRONTEND-STUDIO.md](docs/FRONTEND-STUDIO.md).
+
+Unter **Versionen** kannst du gespeicherte Konfigurationen vergleichen und einen früheren Stand als Entwurf zurückholen.
 
 ## 6. Dein PDF einbinden
 
@@ -54,4 +60,8 @@ Zum Beenden **STOPPEN.cmd** doppelklicken. Daten bleiben erhalten. Für den näc
 
 Notiere, bei welchem Schritt es scheitert, und kopiere den sichtbaren Fehlertext. Teile dabei keine Passwörter oder Tokens. Häufige Ursachen sind ein noch nicht gestartetes Docker Desktop, ein notwendiger Windows-Neustart oder ein bereits belegter Port 3000. Das Startfenster bleibt geöffnet, damit eine Fehlermeldung nicht sofort verschwindet.
 
-Das Paket startet eine lokale Testinstallation. Für einen öffentlichen Internetauftritt brauchst du anschließend ein Hostingziel mit HTTPS und deine geprüften Anbieter-/Datenschutzangaben. Ein Domainwechsel oder eine Veröffentlichung deiner bestehenden Website wird dadurch nicht automatisch vorgenommen.
+## Die fertige Website ins Internet bringen
+
+Im Baukasten **Export & Livegang** öffnen. Deine Domain eintragen, **Deployment vorbereiten** und **Fertiges Projekt exportieren** anklicken. Das neue ZIP enthält deine gespeicherten Einstellungen, Immobilien und zugeordneten Medien sowie Website und Admin. Benutzer und Zugangsdaten werden am Ziel neu eingerichtet.
+
+Für den Livegang benötigst du einen VPS; dieser ist dein Hosting. Domain auf den VPS zeigen lassen, das neue ZIP dorthin kopieren, entpacken und im Ordner Raumwerk `bash LIVE-STARTEN.sh` starten. Folge [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) für die einzelnen Schritte. HTTPS wird mit Caddy automatisch eingerichtet, sobald DNS und die Serverports stimmen. Es wird dadurch keine bereits vorhandene Website oder Domain automatisch umgestellt.

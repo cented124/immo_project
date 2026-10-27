@@ -125,3 +125,13 @@ class Audit(Base):
     actor: Mapped[str] = mapped_column(String(254))
     action: Mapped[str] = mapped_column(String(100))
     created: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class Revision(Base):
+    __tablename__ = "revisions"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    actor: Mapped[str] = mapped_column(String(254))
+    label: Mapped[str] = mapped_column(String(120))
+    kind: Mapped[str] = mapped_column(String(20))
+    config: Mapped[dict] = mapped_column(JSON)
+    created: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)

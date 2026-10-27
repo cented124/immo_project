@@ -1,12 +1,12 @@
 # Nachweis der lokalen Abnahme
 
-Stand: 26.10.2026. Alle Daten in automatisierten Tests sind ausdrücklich synthetisch. Keine Beispielimmobilie wurde im eigentlichen Entwicklungsdatenbestand veröffentlicht.
+Stand: 27.10.2026. Alle Daten in automatisierten Tests sind ausdrücklich synthetisch. Keine Beispielimmobilie wurde im eigentlichen Entwicklungsdatenbestand veröffentlicht.
 
 | Prüfung | Ergebnis |
 | --- | --- |
-| Python-Integrationstests mit temporärem SQLite | **23 bestanden** |
-| Dieselbe Suite mit echtem PostgreSQL 17 (Docker) | **23 bestanden** |
-| Playwright / Chromium – Desktop und mobile Ansicht | **10 bestanden** |
+| Python-Integrationstests mit temporärem SQLite | **31 bestanden** |
+| Dieselbe Suite mit echtem PostgreSQL 17 (Docker) | **31 bestanden** |
+| Playwright / Chromium – Desktop und mobile Ansicht | **14 bestanden** |
 | TypeScript `tsc --noEmit` | bestanden |
 | Next.js Produktionsbuild | bestanden |
 | `docker compose config --quiet` | bestanden |
@@ -67,10 +67,24 @@ Ein anschließend gefundener Dateirechtefehler im API-Image wurde durch `COPY --
 
 ## Ergänzte Nachweise dieser Nachprüfung
 
-Neun zusätzliche Backendtests prüfen persistenten Template-Import und Script-Abweisung, Seitenformularziele/-statistik, Kontosperren/letzten Administrator, Passwortänderung/Sitzungswiderruf, atomare deduplizierte Dokumentannahme mit eigenen Jobs, private Modulvorschau, Chunked-Uploadlimit, Umlaut-/Notizensuche mit gefiltertem CSV sowie temporäre Telegram- und permanente SMTP-Fehler. Alle 23 Fälle wurden auf SQLite und echtem PostgreSQL ausgeführt.
+Neun zusätzliche Backendtests prüfen persistenten Template-Import und Script-Abweisung, Seitenformularziele/-statistik, Kontosperren/letzten Administrator, Passwortänderung/Sitzungswiderruf, atomare deduplizierte Dokumentannahme mit eigenen Jobs, private Modulvorschau, Chunked-Uploadlimit, Umlaut-/Notizensuche mit gefiltertem CSV sowie temporäre Telegram- und permanente SMTP-Fehler. Diese damaligen 23 Fälle wurden auf SQLite und echtem PostgreSQL ausgeführt.
 
 Zwei zusätzliche Browserdurchläufe prüfen auf Desktop und Mobilgerät: Manifest importieren, Editorial-Vorschau, Navigation erhält preview=1, Vorschauformulare sind gesperrt, eigene Formularziele speichern und Kontoseite anzeigen. Insgesamt zehn Browserfälle bestanden.
 
 Live: Der vom Benutzer vorgegebene Gruppenchat wurde vor Zustellung geprüft. Eine echte Testnachricht sowie zwei Outbox-Jobs (Kontakt und private PDF-Rückgabe) wurden von Telegram bestätigt. Der identische PDF-Rückgabeversuch erzeugte weder eine zweite Datei noch einen zweiten Zustellauftrag. Keine PDF-Datei wurde an Telegram übertragen. Die E-Mail-Zustellung für die Testserie bleibt deaktiviert; das Empfängerpostfach wurde nicht per IMAP gelesen.
 
 Windows-Hilfe: PowerShell-Syntax und kontrollierte Trockenläufe unter PowerShell im offiziellen Linux-Container bestanden. Geprüft wurden Erstinstallation, zufällige Installationsschlüssel, Erstadmin-Zweig, Wiederholungsstart und Erhalt einer bestehenden .env. Docker wurde dabei simuliert; eine echte Windows-/Docker-Desktop-GUI-Prüfung wird nicht behauptet. Zusätzlich wurden Migrationen und die Erstadmin-Erkennung des tatsächlichen neuen API-Images ohne vorhandenes Konto geprüft.
+
+## Frontend-Studio und Projektexport, 27.10.2026
+
+Acht neue Backendfälle prüfen strukturierte Firmen-/Registerdaten im Prompt, tatsächlichen vollständigen Referenzexport ohne gespeicherte Betriebsgeheimnisse, JSON-/ZIP-Designimport und Script-/Pfadabweisung, private Entwurfsaktivierung vor Veröffentlichung, fehlende Medien und Kontrastwarnungen, Versionsvergleich/Wiederherstellung ohne sofortige Veröffentlichung, Adminrechte, Domainvalidierung, Loginlimits und explizite Proxy-Vertrauensgrenze.
+
+Der Projektexport wird mit Immobilienbild, interner Objekt-PDF, Selbstauskunft-Vorlage, synthetischer Anfrage und synthetischem Integrationstoken erzeugt. Das Archiv wird auf fehlende Geheimnisse/Anfragedaten geprüft und in einer separaten leeren Installation nach echten Alembic-Migrationen importiert. Geprüft werden öffentliche Config/Immobilie/Bild, private Dokumente, fehlende Benutzer/Anfragen/Outbox, deaktivierte externe Zustellung, wiederholter Start ohne Überschreiben und Abweisung veränderter Medienprüfsummen vor jeder Datenübernahme.
+
+Vier neue Browserfälle (je zwei auf Desktop und Mobilgerät) bedienen das Firmenformular, generieren den Prompt, laden das Referenz-ZIP herunter, prüfen/importieren ein Version-2-Design, zeigen die echte Split-/Listen-Vorschau, erzeugen den Domainplan, laden das Projekt-ZIP herunter und stellen eine verglichene Konfiguration nur als Entwurf wieder her. Beide Ansichten werden auf seitliches Überlaufen geprüft. [Echte Screenshots](screenshots/README.md) liegen im Repository. Jede Browser-Suite bekommt einen eigenen isolierten Datenordner und versendet keine externen Nachrichten.
+
+Nicht als geprüft ausgegeben werden ein fremder noch nicht bereitgestellter VPS, öffentliche DNS-Umstellung, öffentlich ausgestelltes Zertifikat für eine Kundendomain oder beliebiger von Dritten veränderter React-Code. Dafür werden Startprogramm, HTTPS-Prüfhelfer und die dokumentierte Abnahme geliefert. Es wurden in dieser Erweiterung keine weiteren echten E-Mails oder Telegram-Nachrichten gesendet.
+
+Zusätzliche Abnahme mit gebauten Docker-Images: Ein synthetisches Projekt wurde exportiert, mit restriktiven Host-Dateirechten in ein eigenes API-Image eingebaut und in einem separaten frischen Compose-Projekt mit PostgreSQL gestartet. Bestanden: automatischer Erstimport, Website/öffentliche API/Bild, Authentifizierung, KI-Referenzexport inklusive öffentlichem OpenAPI-Vertrag, erneuter Projektexport aus dem Container, fortlaufende PostgreSQL-Immobilien-ID, echte Anfrageannahme ohne externe Zustelljobs sowie Neustart mit erhaltenen Inhalten und Sitzungen. Die Seeddateien werden beim Build dem App-Benutzer zugeordnet; die API läuft ohne root. Caddy-Konfiguration im offiziellen Container validiert; HTTPS und Redirect sind konfiguriert. Keine öffentliche Kundendomain wurde dafür verwendet.
+
+GitHub Actions ist für Backendtests, Produktionsbuild, Desktop-/Mobiltests, Compose-Konfiguration und Downloadprüfsumme eingerichtet. Ein erfolgreicher GitHub-Lauf wird erst durch den tatsächlichen Status auf GitHub nachgewiesen; lokale Ergebnisse sind davon getrennt.

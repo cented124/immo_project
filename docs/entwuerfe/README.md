@@ -1,6 +1,6 @@
 # GUI-Entwurf für den Baukasten
 
-**Status: Zielentwurf zur Freigabe.** Das Bild zeigt die vorgeschlagene Oberfläche und geplante Funktionen, nicht den aktuellen Implementierungsstand. Die Umsetzung wartet auf die Freigabe des Auftraggebers.
+**Status: Am 27.10.2026 freigegeben und umgesetzt.** Das Bild bleibt als ursprünglicher Zielentwurf erhalten. Echte Bilder der implementierten Oberfläche stehen unter [Screenshots](../screenshots/README.md).
 
 [Bild in voller Größe öffnen](baukasten-gui.png)
 
