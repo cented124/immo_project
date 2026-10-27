@@ -42,6 +42,8 @@ from .builder import (
 )
 from .project import export_project
 
+SESSION_COOKIE = os.getenv("SESSION_COOKIE_NAME", "raumwerk_session")
+
 
 def initialize():
     with Session() as db:
@@ -150,7 +152,7 @@ async def safety(request, call_next):
 
 
 def current(request: Request, db=Depends(db_session)):
-    token = request.cookies.get("raumwerk_session", "")
+    token = request.cookies.get(SESSION_COOKIE, "")
     session = db.get(LoginSession, digest(token)) if token else None
     expires = session.expires.replace(tzinfo=timezone.utc) if session else None
     if not session or expires < now():
@@ -198,7 +200,7 @@ def login(data: Login, request: Request, response: Response, db=Depends(db_sessi
     audit(db, user, "Anmeldung")
     db.commit()
     response.set_cookie(
-        "raumwerk_session",
+        SESSION_COOKIE,
         token,
         httponly=True,
         samesite="strict",
@@ -220,11 +222,11 @@ def logout(
 ):
     db.execute(
         delete(LoginSession).where(
-            LoginSession.token == digest(request.cookies.get("raumwerk_session", ""))
+            LoginSession.token == digest(request.cookies.get(SESSION_COOKIE, ""))
         )
     )
     db.commit()
-    response.delete_cookie("raumwerk_session")
+    response.delete_cookie(SESSION_COOKIE)
     return {"ok": True}
 
 

@@ -23,3 +23,7 @@ playwright-report/
 /project/*
 !/project/README.md
 /deployment.json
+.runtime/
+DATEN/
+SICHERUNGEN/
+dist/

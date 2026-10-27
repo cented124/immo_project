@@ -1,0 +1,73 @@
+name: Windows without Docker
+on:
+  push:
+    branches: [main, windows-native]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Source checkout in a path with spaces and Unicode
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP "Raumwerk Test ü O'Neil"
+          $zip = Join-Path $env:RUNNER_TEMP 'raumwerk-source.zip'
+          git archive --format=zip --output=$zip HEAD
+          Expand-Archive -LiteralPath $zip -DestinationPath $target
+          "RW_TEST_ROOT=$target" >> $env:GITHUB_ENV
+      - name: Windows PowerShell 5.1 bootstrap, verified runtimes and native build
+        shell: cmd
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%RW_TEST_ROOT%\scripts\windows-start.ps1" -Action prepare -NoBrowser -NoDelivery
+      - name: Real Windows browser and process lifecycle test
+        shell: pwsh
+        run: |
+          $node = Join-Path $env:RW_TEST_ROOT '.runtime\node\node.exe'
+          $python = Join-Path $env:RW_TEST_ROOT '.runtime\python\python.exe'
+          & $node (Join-Path $env:RW_TEST_ROOT 'scripts\test-desktop.cjs') $env:RW_TEST_ROOT $python
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build ready-to-run package without data or credentials
+        shell: pwsh
+        run: |
+          & (Join-Path $env:RW_TEST_ROOT '.runtime\python\python.exe') -X utf8 (Join-Path $env:RW_TEST_ROOT 'scripts\package-windows-ready.py')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Relocate and launch the ready package offline
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP "Raumwerk Offline ü"
+          Expand-Archive -LiteralPath (Join-Path $env:RW_TEST_ROOT 'dist\Raumwerk-Windows-ohne-Docker.zip') -DestinationPath $target
+          $project = Join-Path $target 'Raumwerk'
+          $env:HTTP_PROXY = 'http://127.0.0.1:9'
+          $env:HTTPS_PROXY = 'http://127.0.0.1:9'
+          $env:NO_PROXY = '127.0.0.1,localhost'
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $project 'scripts\windows-start.ps1') -NoBrowser -NoDelivery
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $project 'scripts\windows-start.ps1') -Action stop
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-without-docker
+          path: ${{ env.RW_TEST_ROOT }}/dist/*
+          retention-days: 30
+      - name: Publish tested Windows package
+        if: github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = 'windows-desktop-' + '${{ github.sha }}'.Substring(0,7)
+          gh release create $tag --repo '${{ github.repository }}' --title 'Raumwerk fuer Windows ohne Docker' --notes 'Auf echtem Windows-Runner mit PowerShell 5.1, Edge, Neustart, Sicherung und Offline-Umzug getestet. Das Paket enthaelt keine Konten oder Zugangsdaten.' (Join-Path $env:RW_TEST_ROOT 'dist\Raumwerk-Windows-ohne-Docker.zip') (Join-Path $env:RW_TEST_ROOT 'dist\Raumwerk-Windows-ohne-Docker.sha256.txt')
+      - name: Safe test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-desktop-test-evidence
+          path: |
+            ${{ env.RW_TEST_ROOT }}/.runtime/test-evidence/*
+            ${{ env.RW_TEST_ROOT }}/.runtime/logs/*
+          retention-days: 14

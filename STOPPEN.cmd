@@ -1,10 +1,7 @@
 @echo off
+setlocal DisableDelayedExpansion
 cd /d "%~dp0"
-docker compose stop
-if errorlevel 1 (
-  echo Stoppen fehlgeschlagen. Bitte Docker Desktop und die Fehlermeldung pruefen.
-  pause
-  exit /b 1
-)
-echo Die Anwendung ist gestoppt. Ihre Daten bleiben erhalten.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\windows-start.ps1" -Action stop
+set "RW_RESULT=%errorlevel%"
 pause
+exit /b %RW_RESULT%

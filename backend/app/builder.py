@@ -43,6 +43,11 @@ def source_files(root=ROOT):
         "ANLEITUNG-WINDOWS.html",
         "STARTEN.cmd",
         "STOPPEN.cmd",
+        "DIAGNOSE.cmd",
+        "REPARIEREN.cmd",
+        "SICHERN.cmd",
+        "STARTEN-DOCKER.cmd",
+        "STOPPEN-DOCKER.cmd",
         "LIVE-STARTEN.sh",
         "compose.yaml",
         "compose.production.yaml",
@@ -61,6 +66,7 @@ def source_files(root=ROOT):
         "frontend/playwright.config.ts",
         "project/README.md",
         ".github/workflows/ci.yml",
+        ".github/workflows/windows.yml",
     ]
     paths = {root / n for n in names}
     for folder in roots:
@@ -75,7 +81,7 @@ def source_files(root=ROOT):
                 or part in {"__pycache__", "node_modules", "test-results"}
                 for part in rel.parts
             )
-            and str(rel) not in names
+            and rel.as_posix() not in names
         ):
             continue
         if p.suffix in {".pyc", ".db", ".key", ".sqlite", ".sqlite3", ".tsbuildinfo"}:

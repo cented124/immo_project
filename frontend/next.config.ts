@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
-  output: "standalone",
+  output: process.env.RAUMWERK_DESKTOP === "1" ? undefined : "standalone",
   distDir: process.env.NEXT_DIST_DIR || ".next",
   async rewrites() {
     return [
