@@ -4,7 +4,7 @@ Für Windows 10/11 **x64**. Du brauchst einen aktuellen Browser. Docker, WSL und
 
 ## 1. Das richtige ZIP herunterladen
 
-Empfohlen: **[Fertiges Windows-Paket mit Laufzeiten](https://github.com/cented124/immo_project/releases/latest/download/Raumwerk-Windows-ohne-Docker.zip)**. Es enthält Python, Node.js, Backend-Pakete und das gebaute Frontend. Der erste lokale Start benötigt damit keine Internetverbindung. Telegram, E-Mail und externe KI-Dienste benötigen für ihre jeweilige Nutzung weiterhin Internet.
+Empfohlen: **[Fertiges Windows-Paket mit Laufzeiten](https://github.com/cented124/immo_project/releases/download/v1.0.0/Raumwerk-Windows-ohne-Docker.zip)**. Es enthält Python, Node.js, Backend-Pakete und das gebaute Frontend. Der erste lokale Start benötigt damit keine Internetverbindung. Telegram, E-Mail und externe KI-Dienste benötigen für ihre jeweilige Nutzung weiterhin Internet.
 
 Alternative: **[Kleines Windows-Quellpaket](https://github.com/cented124/immo_project/raw/refs/heads/main/downloads/Raumwerk-Windows.zip)** oder GitHub **Code → Download ZIP**. Hier richtet der erste Start die Programme automatisch ein und lädt die Abhängigkeiten herunter; dafür wird Internet benötigt. Mehrere Minuten Wartezeit beim ersten Mal sind normal.
 
@@ -50,7 +50,7 @@ Der [vollständige Beispieldurchlauf](docs/SIMULATION.md) zeigt diese Schritte m
 
 Die Downloads enthalten keine Zugangsdaten. Unter **Integrationen** die eigenen Daten eintragen, speichern, danach das passende Modul und die Formularziele aktivieren und veröffentlichen. Ohne Zustelldienst landen Anfragen bereits im Adminbereich.
 
-Ein Klick auf **Testnachricht senden** oder **Test-E-Mail senden** versendet tatsächlich eine Nachricht. Bei den bisherigen E-Mail-Tests aus diesem Chat gab es zwei erfolglose Cloud-Verbindungsversuche und keine angenommene E-Mail. Die vereinbarte Begrenzung auf drei Mailtests bleibt bestehen; keine Testklick-Serie starten. Für diese Windows-Erweiterung wurden keine weiteren echten E-Mails oder Telegram-Nachrichten gesendet.
+Ein Klick auf **Testnachricht senden** oder **Test-E-Mail senden** versendet tatsächlich eine Nachricht. Empfänger vorher kontrollieren und den Eingang am Ziel prüfen.
 
 ## 7. Stoppen, sichern, später starten
 
@@ -77,3 +77,20 @@ Vor einem Update STOPPEN und SICHERN verwenden. Neue Programmdateien in einen ne
 **Export & Livegang** erstellt ein Projektpaket mit Website, Admin, Immobilien und zugeordneten Medien. Dieses Paket lässt sich unter Windows ebenfalls mit STARTEN testen. Die hier gestartete Desktop-Version ist ausschließlich lokal erreichbar.
 
 Für den öffentlichen Betrieb mit Domain und HTTPS bleibt die [VPS-Anleitung](docs/DEPLOYMENT.md) der vorgesehene Weg. Der optionale Docker-Start heißt unter Windows jetzt **STARTEN-DOCKER.cmd** / **STOPPEN-DOCKER.cmd**; er gehört nicht zum normalen Desktop-Start.
+
+## Sicherung wiederherstellen
+
+1. `WIEDERHERSTELLEN.cmd` öffnen und deine ZIP-Sicherung auswählen.
+2. Raumwerk prüft die Dateien, die Datenbank, den Integrationsschlüssel und importierte Frontends.
+3. Mit der angezeigten Eingabe bestätigen. Der bisherige Stand wird vor dem Austausch zusätzlich unter `SICHERUNGEN` gesichert, auch wenn seine Datenbank beschädigt ist.
+4. `STARTEN.cmd` öffnen und mit den Konten/Passwörtern der Sicherung anmelden.
+
+Alte Anmeldungen werden ungültig. Zum Zeitpunkt der Sicherung wartende Nachrichten stehen nach der Rückspielung als pausierte Fehler unter **Integrationen**. Vor einer manuellen Wiederaufnahme prüfen, ob sie bereits beim Empfänger angekommen sind. Ältere DATEN-ZIPs ohne Prüfsummenmanifest sind nach Datenbank-/Medienprüfung weiterhin unterstützt. Maximal 2 GB entpackte Sicherungsdaten und 20000 Archiveinträge.
+
+## Passwort vergessen
+
+`PASSWORT-ZURUECKSETZEN.cmd` öffnen. Die vorhandene Administrator-E-Mail und zweimal ein neues Passwort mit 12 bis 200 Zeichen eingeben. Passwörter werden bei der Eingabe nicht angezeigt. Das Programm stoppt Raumwerk und beendet alte Sitzungen. Anschließend `STARTEN.cmd` öffnen und neu anmelden. Zugriff auf deinen lokalen Computer und Datenordner ist dafür erforderlich.
+
+## Lokale und öffentliche Inserate
+
+Die obere Leiste zeigt **Lokal auf diesem Computer** oder **Server-Installation** und die Version. Nach dem VPS-Livegang neue Angebote direkt unter `https://deine-domain.de/admin` anlegen, ändern oder zurückziehen. Änderungen in einem lokalen DATEN-Ordner werden nicht automatisch zum VPS übertragen.

@@ -15,11 +15,22 @@ export async function generateMetadata({ params,searchParams }: Props): Promise<
       { cache: "no-store" },
     ).then((r) => r.json());
     const page = c.pages.find((p: { slug: string }) => p.slug === path[0]);
+    let property;
+    if (path[0] === "immobilien" && path.length === 2) {
+      const response = await fetch(`${process.env.API_INTERNAL_URL || "http://127.0.0.1:8000"}/api/public/properties/${encodeURIComponent(path[1])}`, { cache: "no-store" });
+      if (response.ok) property = await response.json();
+    }
+    const index = await fetch(`${process.env.API_INTERNAL_URL || "http://127.0.0.1:8000"}/api/public/search-index`, { cache: "no-store" }).then(r => r.ok ? r.json() : null);
+    const privatePage = path[0] === "admin" || (await searchParams).preview === "1";
+    const title = `${property?.title || page?.title || c.seo_title} | ${c.company}`;
+    const description = property ? `${property.title} · ${property.city} · ${property.area} m² · ${property.rooms} Zimmer` : page?.seo_description || c.seo_description;
+    const canonical = index && !index.local && !privatePage ? index.origin + (path.length ? "/" + path.map(encodeURIComponent).join("/") : "") : undefined;
     return {
-      title: `${page?.title || c.seo_title} | ${c.company}`,
-      description: page?.seo_description || c.seo_description,
+      title, description,
+      alternates: canonical ? { canonical } : undefined,
+      openGraph: privatePage ? undefined : { title, description, url: canonical, type: "website" },
       icons: c.favicon ? { icon: c.favicon } : undefined,
-      robots: path[0] === "admin" || (await searchParams).preview==='1' ? { index: false, follow: false } : undefined,
+      robots: privatePage || index?.local ? { index: false, follow: false } : undefined,
     };
   } catch {
     return { title: "Raumwerk" };

@@ -61,3 +61,19 @@ Abgelaufene Sitzungen werden im laufenden Bereinigungsjob gelöscht. Eigene Pass
 ## Migrationen und Updates
 
 Vor jedem Update konsistent sichern. Abhängigkeiten aus Lockfile/Requirements installieren, `alembic -c backend/alembic.ini upgrade head` ausführen, Build/Tests und Smokechecks durchführen. Integrationsschlüssel unverändert erhalten. Keine Datenbank mittels `create_all` oder Schema-Drops „reparieren“.
+
+## Ausgabe 1.0.0
+
+**Einstellungen → Betriebsstatus & Startprüfung** prüft den veröffentlichten Stand, Medien, Paketdateien, Integrationskonfiguration, Worker, Speicher und Zustellfehler. Die Anzeige bestätigt weder eine rechtliche Prüfung noch die externe Erreichbarkeit oder den Eingang einer Nachricht beim Empfänger. Eigene Erreichbarkeits- und Backupüberwachung bleiben erforderlich.
+
+Lokales Windows: `SICHERN.cmd` erzeugt eine vollständige Prüfsummensicherung. `WIEDERHERSTELLEN.cmd` prüft und entpackt zuerst in ein privates Zwischenverzeichnis. Vor dem Austausch stoppt Raumwerk und sichert den bisherigen Stand zusätzlich; auch eine beschädigte alte Datenbank kann so unverändert aufgehoben werden. Anmeldesitzungen werden im wiederhergestellten Stand gelöscht, wartende Outbox-Aufträge zur manuellen Prüfung pausiert. Standardmäßig werden höchstens 2 GB entpackte Daten / 20000 ZIP-Einträge akzeptiert. Alte DATEN-only-ZIPs bleiben unterstützt; ohne Manifest gibt es nur die Datenbank-/Medien-/Schlüsselprüfung und keine ursprünglichen Dateiprüfsummen.
+
+Passwortwiederherstellung setzt Zugriff auf das Betriebssystem voraus. Lokal: `PASSWORT-ZURUECKSETZEN.cmd`. Auf dem Server:
+
+```bash
+docker compose exec api python -m app.cli reset-admin-password --email admin@deine-domain.de
+```
+
+Das Passwort wird verdeckt eingegeben. Es können nur bereits vorhandene aktive Administratoren wiederhergestellt werden; alte Sitzungen werden beendet. Unter **Mein Konto** können zusätzlich andere eigene Sitzungen abgemeldet werden.
+
+Die öffentliche interaktive API-Dokumentation ist in der Auslieferung deaktiviert. Entwickler können sie serverseitig mit `API_DOCS=1` unter `/api/docs` aktivieren. Die API-Beschreibung im Frontend-Referenzexport bleibt verfügbar. Tests und Diagnosewerkzeuge sind im Quellpaket erhalten, Testbibliotheken werden über `backend/requirements-dev.txt` getrennt installiert.

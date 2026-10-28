@@ -22,7 +22,7 @@ const { chromium, expect } = require(
 );
 const password = "Native-test-" + crypto.randomBytes(16).toString("hex");
 let browser, guard;
-function command(action) {
+function command(action, extra = []) {
   console.log("Native action: " + action);
   const result = cp.spawnSync(
     python,
@@ -33,6 +33,7 @@ function command(action) {
       action,
       "--no-browser",
       "--no-delivery",
+      ...extra,
     ],
     { cwd: root, encoding: "utf8", timeout: 180000, windowsHide: true },
   );
@@ -388,7 +389,20 @@ async function checkExport(context, url, headers) {
     )
       throw new Error("unexpected package delivery");
     command("backup");
+    const backupPath = path.join(root, "SICHERUNGEN", fs.readdirSync(path.join(root, "SICHERUNGEN")).filter(n => n.endsWith(".zip")).sort().at(-1));
     command("launch");
+    await login(page, state().url);
+    const savedRows = await (await context.request.get(state().url + "/api/admin/inquiries")).json();
+    if (savedRows.length !== 2) throw new Error("expected two inquiries before restore");
+    await context.request.delete(state().url + "/api/admin/inquiries/" + savedRows[0].id, { headers });
+    if ((await (await context.request.get(state().url + "/api/admin/inquiries")).json()).length !== 1) throw new Error("restore simulation did not change the data");
+    command("restore", ["--archive", backupPath, "--yes"]);
+    command("launch");
+    if ((await context.request.get(state().url + "/api/admin/me")).status() !== 401) throw new Error("restore revived an old session");
+    await login(page, state().url);
+    if ((await (await context.request.get(state().url + "/api/admin/inquiries")).json()).length !== 2) throw new Error("restore did not recover the removed inquiry");
+    const restoredIntegration = await (await context.request.get(state().url + "/api/admin/integrations/telegram")).json();
+    if (!restoredIntegration.secret_configured) throw new Error("restore lost encrypted settings");
     await customer.goto(state().url + "/immobilien/native-test-wohnung");
     await expect(
       customer
@@ -414,6 +428,8 @@ async function checkExport(context, url, headers) {
           restart: true,
           encrypted_key_preserved: true,
           backup: true,
+          verified_restore_recovers_deleted_inquiry_and_custom_frontend: true,
+          restore_revokes_sessions: true,
           no_external_delivery: true,
         },
         null,

@@ -21,6 +21,7 @@ import time
 from urllib.parse import urlsplit
 import webbrowser
 import zipfile
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / ".runtime"
@@ -380,6 +381,7 @@ def configure_environment():
         SESSION_COOKIE_NAME="raumwerk_desktop_"
         + hashlib.sha256(str(DATA.resolve()).casefold().encode()).hexdigest()[:16],
     )
+    os.environ["RAUMWERK_DESKTOP"] = "1"
     os.environ.pop(
         "ENCRYPTION_KEY", None
     )  # Desktop key lives beside its own SQLite DB.
@@ -687,19 +689,55 @@ def backup():
         stop()
         if not (DATA / "app.db").is_file():
             raise RuntimeError("Noch keine lokale Datenbank vorhanden.")
-        folder = ROOT / "SICHERUNGEN"
-        folder.mkdir(mode=0o700, exist_ok=True)
-        target = folder / (
-            time.strftime("Raumwerk-%Y%m%d-%H%M%S-") + secrets.token_hex(3) + ".zip"
-        )
-        with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
-            for path in DATA.rglob("*"):
-                if path.is_file() and not path.is_symlink():
-                    archive.write(path, "DATEN/" + path.relative_to(DATA).as_posix())
+        from desktop_backup import create_backup
+        sys.path.insert(0, str(ROOT / "backend"))
+        from app.version import VERSION
+        target = create_backup(DATA, ROOT / "SICHERUNGEN", VERSION)
     print("Sicherung erstellt: " + str(target))
     print(
         "Enthaelt private Daten und den Schluessel. Nicht in GitHub oder im Chat veroeffentlichen."
     )
+    return target
+
+
+def restore(archive_path, confirmed=False):
+    from desktop_backup import stage_backup, create_backup, replace_data, prepare_restored_database
+    sys.path.insert(0, str(ROOT / "backend"))
+    from app.version import VERSION
+    if not archive_path or not archive_path.is_file():
+        raise RuntimeError("Bitte eine vorhandene ZIP-Sicherung auswaehlen.")
+    with FileLock(CONTROL / "install.lock"):
+        with tempfile.TemporaryDirectory(prefix="restore-", dir=CONTROL) as temporary:
+            stage = Path(temporary)
+            info = stage_backup(archive_path.resolve(), stage)
+            print("Sicherung geprueft. Version: " + str(info.get("version", "unbekannt")))
+            if not confirmed:
+                print("Raumwerk wird gestoppt. Der bisherige Stand wird zusaetzlich gesichert und dann ersetzt.")
+                if input("Zum Fortfahren WIEDERHERSTELLEN eingeben: ").strip() != "WIEDERHERSTELLEN":
+                    print("Abgebrochen. Vorhandene Daten bleiben erhalten.")
+                    return
+            stop()
+            if (DATA / "app.db").is_file():
+                previous = create_backup(DATA, ROOT / "SICHERUNGEN", VERSION, validate=False)
+                print("Zusaetzliche Sicherung des bisherigen Stands: " + str(previous))
+            prepare_restored_database(stage / "DATEN")
+            replace_data(DATA, stage / "DATEN")
+    print("Wiederherstellung abgeschlossen. Bitte STARTEN.cmd oeffnen und neu anmelden. Es gelten die Konten und Passwoerter der Sicherung. Wartende Zustellungen sind zur manuellen Pruefung pausiert.")
+
+
+def recover():
+    with FileLock(CONTROL / "install.lock"):
+        if not (DATA / "app.db").is_file():
+            raise RuntimeError("Noch keine lokale Datenbank vorhanden. Bitte STARTEN.cmd verwenden.")
+        stop()
+        configure_environment()
+        from app.cli import main as cli_main
+        previous = sys.argv
+        try:
+            sys.argv = ["raumwerk", "reset-admin-password"]
+            cli_main()
+        finally:
+            sys.argv = previous
 
 
 def diagnose():
@@ -721,11 +759,13 @@ def diagnose():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "action", choices=["prepare", "launch", "serve", "stop", "diagnose", "backup"]
+        "action", choices=["prepare", "launch", "serve", "stop", "diagnose", "backup", "restore", "recover"]
     )
     parser.add_argument("--no-browser", action="store_true")
     parser.add_argument("--no-delivery", action="store_true")
     parser.add_argument("--web-dir", type=Path)
+    parser.add_argument("--archive", type=Path)
+    parser.add_argument("--yes", action="store_true", help="Lokale Wiederherstellung ohne erneute Eingabebestaetigung")
     args = parser.parse_args()
     os.chdir(ROOT)
     RUNTIME.mkdir(exist_ok=True)
@@ -743,6 +783,10 @@ def main():
         stop()
     elif args.action == "backup":
         backup()
+    elif args.action == "restore":
+        restore(args.archive, args.yes)
+    elif args.action == "recover":
+        recover()
     else:
         diagnose()
 

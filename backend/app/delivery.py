@@ -2,7 +2,7 @@
 SMTP/Telegram cannot promise exactly-once delivery after ambiguous network failures.
 """
 
-import json, os, smtplib, ssl
+import json, os, smtplib, ssl, time
 from email.message import EmailMessage
 from datetime import timedelta
 import httpx
@@ -20,6 +20,12 @@ from .db import (
     DATA,
 )
 from .security import decrypt
+
+_worker_state = {"running": False, "last_success": 0.0, "errors": False}
+
+
+def worker_status():
+    return {"enabled": _worker_state["running"], "healthy": bool(_worker_state["running"] and not _worker_state["errors"] and time.monotonic() - _worker_state["last_success"] < 120)}
 
 
 class TemporaryDeliveryError(RuntimeError):
@@ -222,16 +228,19 @@ def purge():
 
 def worker(stop):
     ticks = 0
-    while not stop.wait(2):
-        try:
-            process_once()
-            ticks += 1
-            if ticks % 30 == 0:
-                purge()
-        except Exception:
-            # No request contents, credentials or provider URLs in logs.
-            import logging
-
-            logging.getLogger(__name__).warning(
-                "Outbox: Datenbank vorübergehend nicht erreichbar"
-            )
+    _worker_state.update(running=True, last_success=time.monotonic(), errors=False)
+    try:
+        while not stop.wait(2):
+            try:
+                process_once()
+                ticks += 1
+                if ticks % 30 == 0:
+                    purge()
+                _worker_state.update(last_success=time.monotonic(), errors=False)
+            except Exception:
+                _worker_state["errors"] = True
+                # No request contents, credentials or provider URLs in logs.
+                import logging
+                logging.getLogger(__name__).warning("Outbox: Datenbank vorübergehend nicht erreichbar")
+    finally:
+        _worker_state["running"] = False

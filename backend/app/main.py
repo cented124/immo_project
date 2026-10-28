@@ -42,6 +42,7 @@ from .builder import (
 )
 from .project import export_project
 from .frontend_packages import store_package, package_file, valid_preview, PACKAGE_CSP, package_intact
+from .version import VERSION
 
 SESSION_COOKIE = os.getenv("SESSION_COOKIE_NAME", "raumwerk_session")
 
@@ -72,7 +73,9 @@ async def lifespan(app):
         thread.join(timeout=20)
 
 
-app = FastAPI(title="Raumwerk · Immobilien-Baukasten", lifespan=lifespan)
+app = FastAPI(title="Raumwerk · Immobilien-Baukasten", version=VERSION, lifespan=lifespan,
+              docs_url="/api/docs" if os.getenv("API_DOCS") == "1" else None,
+              redoc_url=None, openapi_url="/api/openapi.json" if os.getenv("API_DOCS") == "1" else None)
 app.add_middleware(BodySizeLimit)
 
 
@@ -209,12 +212,34 @@ def login(data: Login, request: Request, response: Response, db=Depends(db_sessi
         max_age=43200,
         path="/",
     )
-    return {"email": user.email, "role": user.role}
+    from .operations import local_installation
+    return {"email": user.email, "role": user.role, "version": VERSION, "mode": "local" if local_installation() else "server"}
 
 
 @app.get("/api/admin/me")
 def me(user=Depends(current)):
-    return {"email": user.email, "role": user.role}
+    from .operations import local_installation
+    return {"email": user.email, "role": user.role, "version": VERSION, "mode": "local" if local_installation() else "server"}
+
+
+@app.get("/api/admin/system")
+def system_status(user=Depends(admin), db=Depends(db_session)):
+    from .operations import operating_status
+    return operating_status(db)
+
+
+@app.get("/api/public/search-index")
+def public_search_index(db=Depends(db_session)):
+    from .operations import search_index
+    return search_index(db)
+
+
+@app.post("/api/admin/account/logout-others")
+def logout_others(request: Request, user=Depends(current), db=Depends(db_session)):
+    result = db.execute(delete(LoginSession).where(LoginSession.user_id == user.id, LoginSession.token != digest(request.cookies.get(SESSION_COOKIE, ""))))
+    audit(db, user, "Andere Sitzungen beendet")
+    db.commit()
+    return {"ok": True, "revoked": result.rowcount}
 
 
 @app.post("/api/admin/logout")

@@ -65,6 +65,7 @@ test("template import, safe preview navigation and individual page form settings
     ],
     actions: ["search", "inquiry", "download", "return"],
   };
+  await page.getByText("Erweitert: älteres JSON-Manifest importieren", { exact: true }).click();
   await page.getByLabel("Manifest-Inhalt").fill(JSON.stringify(manifest));
   await page.getByRole("button", { name: "Prüfen und importieren" }).click();
   await expect(

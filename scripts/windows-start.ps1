@@ -1,5 +1,5 @@
 param(
-  [ValidateSet('start','prepare','stop','diagnose','repair','backup')][string]$Action = 'start',
+  [ValidateSet('start','prepare','stop','diagnose','repair','backup','restore','recover')][string]$Action = 'start',
   [switch]$NoBrowser,
   [switch]$NoDelivery
 )
@@ -16,6 +16,17 @@ function Invoke-Desktop([string]$Command) {
   $arguments = @('-X','utf8',$controller,$Command)
   if ($NoBrowser) { $arguments += '--no-browser' }
   if ($NoDelivery) { $arguments += '--no-delivery' }
+  if ($Command -eq 'restore') {
+    Add-Type -AssemblyName System.Windows.Forms
+    $dialog = New-Object System.Windows.Forms.OpenFileDialog
+    $dialog.Title = 'Raumwerk-Sicherung auswaehlen'
+    $dialog.Filter = 'ZIP-Sicherungen (*.zip)|*.zip'
+    $dialog.InitialDirectory = Join-Path $root 'SICHERUNGEN'
+    try {
+      if ($dialog.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) { Write-Host 'Abgebrochen.'; return }
+      $arguments += @('--archive',$dialog.FileName)
+    } finally { $dialog.Dispose() }
+  }
   & $python @arguments
   if ($LASTEXITCODE -ne 0) { throw 'Der Schritt konnte nicht abgeschlossen werden. Bitte die Meldung oben und DIAGNOSE.cmd pruefen.' }
 }
@@ -124,8 +135,8 @@ try {
   if ($architecture -ne 'AMD64') { throw 'Dieses Paket ist fuer Windows x64. Eine ARM-Version ist nicht enthalten.' }
   [System.IO.Directory]::CreateDirectory($runtime) | Out-Null
   foreach ($folder in @((Join-Path $root 'DATEN'),(Join-Path $runtime 'control'),(Join-Path $runtime 'logs'))) { Protect-LocalFolder $folder }
-  if ($Action -eq 'backup') { Protect-LocalFolder (Join-Path $root 'SICHERUNGEN') }
-  if ($Action -in @('stop','diagnose','backup')) {
+  if ($Action -in @('backup','restore')) { Protect-LocalFolder (Join-Path $root 'SICHERUNGEN') }
+  if ($Action -in @('stop','diagnose','backup','restore','recover')) {
     if (-not (Test-Path -LiteralPath $python)) {
       if ($Action -eq 'stop') { Write-Host 'Noch keine lokale Installation gestartet.'; exit 0 }
       throw 'Die Laufzeit ist noch nicht eingerichtet. Bitte zuerst STARTEN.cmd verwenden. Vorhandene Daten bleiben im Ordner DATEN.'

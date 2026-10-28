@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, FormEvent } from "react";
 import { api } from "./api";
+import Link from "next/link";
 type Any = any;
 function Message({ text }: { text: string }) {
   return text ? (
@@ -70,6 +71,13 @@ export function AccountPanel() {
         <button className="button">Passwort ändern</button>
       </form>
       <Message text={message} />
+      <hr />
+      <h3>Andere Anmeldungen beenden</h3>
+      <p>Beendet Ihre Sitzungen auf anderen Geräten. Diese Anmeldung bleibt geöffnet.</p>
+      <button className="small-button" type="button" onClick={async () => {
+        try { const result = await api("/admin/account/logout-others", { method: "POST" }); setMessage(`${result.revoked} andere Sitzung(en) beendet.`); }
+        catch (error: Any) { setMessage(error.message); }
+      }}>Andere Sitzungen abmelden</button>
     </section>
   );
 }
@@ -228,6 +236,9 @@ export function TemplateLibrary({
           ))}
         </select>
       </label>
+      <details className="page-editor">
+      <summary>Erweitert: älteres JSON-Manifest importieren</summary>
+      <p>Für ein vollständiges Frontend einschließlich Bildern verwenden Sie das <Link href="/admin/studio">Frontend-Studio</Link>. Dieser Import übernimmt ausschließlich Theme-Werte.</p>
       <label>
         Manifest-Datei (.json, maximal 64 KB)
         <input
@@ -262,8 +273,31 @@ export function TemplateLibrary({
         {busy ? "Wird geprüft …" : "Prüfen und importieren"}
       </button>
       <Message text={message} />
+      </details>
     </section>
   );
+}
+
+export function OperationsPanel() {
+  const [data, setData] = useState<Any>(null), [error, setError] = useState("");
+  const load = () => { setError(""); api("/admin/system").then(setData).catch(e => setError(e.message)); };
+  useEffect(load, []);
+  return <section className="admin-card" aria-label="Betriebsstatus">
+    <div className="card-header"><h2>Betriebsstatus & Startprüfung</h2><p>Prüft die veröffentlichte Website und diese Installation.</p></div>
+    {error && <p role="alert">{error}</p>}
+    {!data ? <p>Status wird geladen …</p> : <>
+      <p><strong>Raumwerk {data.version} · {data.mode === "local" ? "Lokaler Baukasten" : "Server-Installation"}</strong><br />{data.origin}</p>
+      <p>{data.mode === "local" ? "Immobilien und Anfragen gehören zu dieser lokalen Installation. Nach dem Livegang verwalten Sie neue Inserate direkt im Adminbereich Ihrer Domain. Es gibt keine automatische Synchronisierung." : "Hier angelegte und veröffentlichte Immobilien erscheinen direkt auf dieser Website. Ein erneuter Export ist dafür nicht erforderlich."}</p>
+      <p role="status">{data.ready ? "Technische Startprüfung bestanden." : "Offene Punkte vor dem regelmäßigen Betrieb prüfen."} Rechtstexte und Zustellung am Ziel separat prüfen.</p>
+      <div className="checklist">{data.checks.map((check: Any) => <Link key={check.id} href={"/admin/" + check.link}>
+        <span className={check.ok ? "done" : ""}>{check.ok ? "✓" : "!"}</span>
+        <div><strong>{check.title}</strong><p>{check.detail}</p></div>
+      </Link>)}</div>
+      <h3>Sicherung & Wiederherstellung</h3>
+      <p>{data.mode === "local" ? "SICHERN.cmd erstellt eine vollständige lokale Sicherung und stoppt Raumwerk. Mit WIEDERHERSTELLEN.cmd wählen Sie eine Sicherung aus. Der bisherige Stand wird vorher zusätzlich gesichert. Sicherungen enthalten private Daten und müssen geschützt sowie extern kopiert werden." : "Regelmäßige verschlüsselte Backups und einen Wiederherstellungstest einrichten. Die Anleitung liegt im Projekt unter docs/OPERATIONS.md. Ein Projektexport ersetzt keine Betriebssicherung."}</p>
+    </>}
+    <button className="small-button" onClick={load}>Status erneut prüfen</button>
+  </section>;
 }
 export function FormRouting({
   config: c,

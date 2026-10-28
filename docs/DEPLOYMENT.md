@@ -65,7 +65,7 @@ Der Prüfhelfer ruft Website, Admin und API ausschließlich lesend über HTTPS m
 4. Einen bewussten eigenen Test senden; die tatsächliche Zustellung im Admin prüfen.
 5. Verschlüsselte Backups nach [OPERATIONS.md](OPERATIONS.md) auf einem anderen System ablegen. Wiederherstellung regelmäßig prüfen.
 
-Bei den in diesem Chat verwendeten E-Mail-Testdaten bleiben die ursprünglichen Versandgrenzen bestehen. Automatische Einrichtung und Softwaretests versenden keine echten Nachrichten.
+Automatische Einrichtung und Softwaretests versenden keine echten Nachrichten. Ein bewusster Verbindungstest in den Integrationen führt dagegen einen echten Versand aus.
 
 ## Bestehende lokale Installation auf HTTPS umstellen
 
@@ -78,3 +78,9 @@ COOKIE_SECURE=1
 ```
 
 Dann `bash LIVE-STARTEN.sh` starten. Nicht `docker compose down -v` ausführen: `-v` würde die benannten Datenvolumes löschen. Eine Domainänderung erfordert passende DNS-Einträge und einen Neustart der Produktionskonfiguration.
+
+## Nach dem Livegang weiterarbeiten
+
+Neue Immobilien direkt im **Adminbereich der Domain** anlegen und veröffentlichen. Vorhandene Angebote dort bearbeiten, archivieren oder erneut veröffentlichen. Die öffentliche Website liest die Daten dieser Serverinstallation bei jedem Laden; ein neuer Export ist dafür nicht erforderlich. Dein lokaler Windows-Baukasten verwendet eine eigene Datenbank und wird nicht automatisch synchronisiert.
+
+Unter **Einstellungen → Betriebsstatus & Startprüfung** die Serverinstallation kontrollieren. `/sitemap.xml` enthält automatisch aktivierte Seiten und veröffentlichte/reservierte Immobilien. Rückgezogene Angebote verschwinden beim nächsten Abruf aus der Sitemap und liefern öffentlich 404. Suchmaschinen entscheiden selbst, wann sie Änderungen übernehmen. Lokale Installationen veröffentlichen keine Sitemap-URLs und sperren Crawler per robots.txt.

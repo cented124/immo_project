@@ -47,6 +47,7 @@ import {
   TeamControls,
   TemplateLibrary,
   FormRouting,
+  OperationsPanel,
 } from "./OperationalPanels";
 import { FrontendStudio, DeploymentPanel, VersionPanel } from "./BuilderPanels";
 type Any = any;
@@ -203,7 +204,7 @@ export default function Admin({ tab }: { tab: string }) {
           </div>
           <div>
             <span className="live-dot" />
-            Ihr Arbeitsbereich
+            {user.mode === "local" ? "Lokal auf diesem Computer" : "Server-Installation"} · {user.version}
             <Link className="small-button" href="/" target="_blank">
               <Eye size={14} />
               Website ansehen <ArrowUpRight size={13} />
@@ -581,7 +582,8 @@ function Dashboard({ config }: { config: Any }) {
         <div>
           <span>GUTEN TAG. GUTE PERSPEKTIVEN.</span>
           <h2>Was möchten Sie heute bewegen?</h2>
-          <p>Ihre Website ist der Anfang. Machen Sie etwas daraus.</p>
+            <p>Inserate hier veröffentlichen und Anfragen direkt bearbeiten.</p>
+            <p><Link href="/admin/settings">Betriebsstatus & Startprüfung öffnen</Link></p>
           <Link
             href={
               config.modules.properties ? "/admin/properties" : "/admin/design"
@@ -2366,6 +2368,7 @@ function SettingsPanel({
   }
   return (
     <>
+      <OperationsPanel />
       <Card
         title="Datenschutz & Aufbewahrung"
         description="Texte müssen vor einem öffentlichen Betrieb fachlich und rechtlich geprüft werden."

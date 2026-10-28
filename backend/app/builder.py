@@ -1,8 +1,4 @@
-"""Portable frontend contracts, reviewable prompts and configuration revisions.
-
-Imported designs are data, never executable plugins. Complete source is supplied
-for developer adaptations which are built and tested before deployment.
-"""
+"""Frontend contracts, sandboxed browser packages and configuration revisions."""
 
 import io
 import json
@@ -47,6 +43,8 @@ def source_files(root=ROOT):
         "DIAGNOSE.cmd",
         "REPARIEREN.cmd",
         "SICHERN.cmd",
+        "WIEDERHERSTELLEN.cmd",
+        "PASSWORT-ZURUECKSETZEN.cmd",
         "STARTEN-DOCKER.cmd",
         "STOPPEN-DOCKER.cmd",
         "LIVE-STARTEN.sh",

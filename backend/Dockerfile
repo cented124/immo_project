@@ -16,7 +16,7 @@ COPY --chown=app:app frontend/tests frontend/tests
 COPY --chown=app:app frontend/*.json frontend/*.ts frontend/Dockerfile frontend/AGENTS.md frontend/
 COPY --chown=app:app scripts scripts
 COPY --chown=app:app ["Deine PDF-Vorlage", "Deine PDF-Vorlage"]
-COPY --chown=app:app README.md ANLEITUNG-WINDOWS.md ANLEITUNG-WINDOWS.html STARTEN.cmd STOPPEN.cmd DIAGNOSE.cmd REPARIEREN.cmd SICHERN.cmd STARTEN-DOCKER.cmd STOPPEN-DOCKER.cmd LIVE-STARTEN.sh compose.yaml compose.production.yaml Caddyfile .env.example .dockerignore .gitignore .gitattributes ./
+COPY --chown=app:app README.md ANLEITUNG-WINDOWS.md ANLEITUNG-WINDOWS.html STARTEN.cmd STOPPEN.cmd DIAGNOSE.cmd REPARIEREN.cmd SICHERN.cmd WIEDERHERSTELLEN.cmd PASSWORT-ZURUECKSETZEN.cmd STARTEN-DOCKER.cmd STOPPEN-DOCKER.cmd LIVE-STARTEN.sh compose.yaml compose.production.yaml Caddyfile .env.example .dockerignore .gitignore .gitattributes ./
 ENV PYTHONPATH=/app/backend
 USER app
 CMD ["sh", "-c", "alembic -c backend/alembic.ini upgrade head && python -m app.cli import-project && uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-access-log"]
