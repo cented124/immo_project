@@ -193,3 +193,58 @@ def test_non_loopback_control_state_is_never_contacted():
             "/__desktop/stop",
             "POST",
         )
+
+
+def test_opaque_frontend_origin_can_read_assets_but_cannot_control_or_setup(gateway):
+    server, _, stopped = gateway
+
+    class Asset(BaseHTTPRequestHandler):
+        def log_message(self, *_):
+            pass
+
+        def do_GET(self):
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"/* public bundle */")
+
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), Asset)
+    server.api_port = upstream.server_port
+    thread = threading.Thread(target=upstream.serve_forever, daemon=True)
+    thread.start()
+    try:
+        headers = {"Origin": "null"}
+        assert (
+            request(server, "GET", "/api/public/frontend-sdk.js", headers=headers)[0]
+            == 200
+        )
+        assert (
+            request(
+                server, "GET", "/api/public/frontend/my-design/app.js", headers=headers
+            )[0]
+            == 200
+        )
+        assert request(server, "GET", "/api/admin/config", headers=headers)[0] == 403
+        assert (
+            request(
+                server,
+                "POST",
+                "/__desktop/setup",
+                {},
+                {**headers, "X-Raumwerk-Setup": "setup-once"},
+            )[0]
+            == 403
+        )
+        assert (
+            request(
+                server,
+                "POST",
+                "/__desktop/stop",
+                headers={**headers, "X-Raumwerk-Control": "private-control"},
+            )[0]
+            == 403
+        )
+        assert not stopped.is_set()
+    finally:
+        upstream.shutdown()
+        upstream.server_close()
+        thread.join(timeout=5)

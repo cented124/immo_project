@@ -8,7 +8,7 @@ import io
 import json
 import re
 import zipfile
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from sqlalchemy import select
 from fastapi import HTTPException
 from .config import Config, Theme
@@ -31,6 +31,7 @@ def source_files(root=ROOT):
         "frontend/app",
         "frontend/components",
         "frontend/public",
+        "frontend/portable",
         "frontend/tests",
         "templates",
         "docs",
@@ -104,8 +105,10 @@ def add_revision(db, user, config, kind="draft", label="Entwurf gespeichert"):
         db.delete(row)
 
 
-def add_sources(archive, prefix):
+def add_sources(archive, prefix, documentation_images=True):
     for name, path in source_files():
+        if not documentation_images and name.startswith("docs/") and path.suffix.lower() in {".png", ".jpg", ".webp", ".pdf"}:
+            continue
         if name == "frontend/next-env.d.ts":
             # Next generates environment-specific route imports on build/dev.
             archive.writestr(
@@ -182,18 +185,40 @@ Zielgruppe: {brief["audience"]}
 Stil: {brief["style"]}
 Weitere Wünsche: {brief["wishes"] or "Keine zusätzlichen Vorgaben"}
 
-## Lieferumfang und unterstützte Importwege
-1. Liefere immer eine manifest.json nach schemas/manifest.schema.json, Version 2.
-   Verwende eine neue, eindeutige ID. Alle sechs Seitentypen und vier Aktionen
-   bleiben enthalten. Theme enthält Farben, lokale Schriftwahl, Hintergrund,
-   Textfarbe, Hero cover/split, Karten grid/list, Abstände, Breite und Rundung.
-   Dieses Datenpaket lässt sich direkt im Frontend-Studio prüfen und importieren.
-   Keine zusätzlichen Script-, HTML-, CSS-, URL- oder Paketfelder hinzufügen.
-2. Für freie Änderungen an React/TSX/CSS: Bearbeite den mitgelieferten Quellcode
-   unter reference/frontend. Liefere zusätzlich die geänderten Quellen und eine
-   README mit Einbauanleitung. Freier Programmcode wird NICHT über den
-   Datenimport installiert. Er muss im vollständigen Projekt ersetzt, gebaut und
-   mit den mitgelieferten Tests geprüft werden. Keine Installation zur Laufzeit.
+## Lieferung: exakt eine direkt importierbare ZIP-Datei
+Liefere dem Endnutzer ausschließlich Raumwerk-Frontend.zip (und auf Wunsch einen
+kurzen Testbericht). Keine Anleitung zum Kopieren von Quellcode und kein nacktes
+Manifest als fertiges Frontend verkaufen. In diesem ZIP liegen manifest.json,
+index.html, fertig gebaute CSS-/JavaScript-Dateien, alle Bilder und lokale Fonts.
+Kein node_modules, Backend, Admincode, .env, TSX-Quellcode oder Installationsskript.
+Maximal 10 MB ZIP, 32 MB entpackt, 400 Dateien. Normale relative Dateinamen.
+
+Verwende Manifest Version 3 mit entry: "index.html". Alle sechs Seitentypen und
+vier Aktionen bleiben enthalten; Theme ist optional. assets ordnet optional
+hero_image, approach_image, logo, favicon relativen PNG/JPG/WebP-Dateien zu.
+Die ID muss neu sein. Firmenprofile und Zugangsdaten werden nicht importiert.
+Das konkrete Schema steht unter schemas/manifest.schema.json.
+
+## Vollständig eigene Gestaltung und einfacher Build für die KI
+Du darfst HTML, CSS, JavaScript und die öffentliche React-Oberfläche frei ändern.
+Die fertige Website läuft im isolierten Browserrahmen, ohne Zugriff auf das Admin.
+Der Host lädt die Raumwerk-Anbindung automatisch vor deinem Script:
+const context = await window.Raumwerk.ready(); // config, path, preview, base
+fetch('/api/public/...') wird an die erlaubte öffentliche API weitergereicht.
+window.Raumwerk.navigate('/immobilien') navigiert die äußere Website.
+window.Raumwerk.media(url) macht Vorschaubilder erreichbar.
+Relative lokale Bilder/Styles/Scripts verwenden; keine fremden Tracker oder CDN.
+Eigene Server/SSR-Next-Funktionen sind kein Browserpaket und gehören nicht ins ZIP.
+
+Am einfachsten im mitgelieferten vollständigen Projekt reference/:
+1. npm --prefix frontend ci
+2. frontend/components/Website.tsx und öffentliche CSS/Bilder gestalten.
+3. node scripts/build-frontend-package.cjs --id mein-design-eindeutig --name "Mein Frontend"
+4. Das erzeugte downloads/Raumwerk-Frontend.zip testen und genau dieses ZIP liefern.
+Das Buildwerkzeug bündelt React und die bewährten Formulare mit esbuild, übernimmt
+Bilder und lokale Schriften. frontend/portable/example.zip ist ein bereits fertiges,
+direkt importierbares Beispiel. Für komplett eigenes HTML/JS denselben SDK-Vertrag
+verwenden. Server-/Admincode und Authentifizierung nicht ändern.
 
 ## Verbindlicher Vertrag
 - Next.js 16 App Router, React 19, TypeScript; bestehende Lockdatei beibehalten.
@@ -262,71 +287,16 @@ def reference_zip(config, openapi=None):
         z.writestr("CHECKLIST.md", (ROOT / "docs/FRONTEND-STUDIO.md").read_bytes())
         z.writestr(
             "README.md",
-            "# Raumwerk KI-Frontend-Paket\n\nPROMPT.md und dieses Paket der gewünschten KI geben. manifest.json kann direkt importiert werden. Vollständiger, baubarer Referenzcode mit Backend und isolierten Tests liegt unter reference/. Freie Quellcodeänderungen erfordern Build und Tests, siehe CHECKLIST.md. Enthält Firmendaten, aber keine Zugangsdaten oder Anfragen.\n",
+            "# Raumwerk KI-Frontend-Paket\n\nPROMPT.md und dieses Paket der gewünschten KI geben. Die KI liefert genau ein fertiges Raumwerk-Frontend.zip mit HTML/CSS/JS/Bildern. Ein bereits fertiges Beispiel liegt unter reference/frontend/portable/example.zip. Vollständiger, baubarer Referenzcode mit Backend und isolierten Tests liegt unter reference/. Die KI baut die geänderte öffentliche Website mit scripts/build-frontend-package.cjs und testet das ZIP; der Endnutzer importiert nur die ZIP-Datei. Enthält Firmendaten, aber keine Zugangsdaten oder Anfragen.\n",
         )
-        add_sources(z, "reference/")
+        add_sources(z, "reference/", documentation_images=False)
     return stream.getvalue()
 
 
 def parse_design(content, filename):
-    try:
-        if filename.lower().endswith(".zip"):
-            with zipfile.ZipFile(io.BytesIO(content)) as z:
-                infos = z.infolist()
-                if (
-                    len(infos) > 400
-                    or sum(i.file_size for i in infos) > 32 * 1024 * 1024
-                ):
-                    raise ValueError(
-                        "Archiv zu groß (maximal 32 MB entpackt / 400 Einträge)"
-                    )
-                names = [i.filename for i in infos]
-                if len(names) != len(set(names)):
-                    raise ValueError("Doppelte Archivpfade")
-                for i in infos:
-                    p = PurePosixPath(i.filename)
-                    if (
-                        p.is_absolute()
-                        or ".." in p.parts
-                        or "\\" in i.filename
-                        or (i.external_attr >> 16) & 0o170000 == 0o120000
-                    ):
-                        raise ValueError("Unzulässiger Archivpfad")
-                    if i.flag_bits & 1:
-                        raise ValueError(
-                            "Verschlüsselte ZIP-Dateien werden nicht unterstützt"
-                        )
-                    if not (
-                        i.filename
-                        in {
-                            "manifest.json",
-                            "README.md",
-                            "PROMPT.md",
-                            "CONTRACT.md",
-                            "CHECKLIST.md",
-                            "company.json",
-                        }
-                        or i.filename.startswith(("reference/", "schemas/"))
-                    ):
-                        raise ValueError(
-                            "Nur manifest.json sowie Referenzdateien unter reference/ oder schemas/ erlaubt"
-                        )
-                content = z.read("manifest.json")
-        if len(content) > 128 * 1024:
-            raise ValueError("Manifest zu groß")
-        manifest = Manifest.model_validate(json.loads(content))
-        return manifest
-    except (
-        ValueError,
-        KeyError,
-        zipfile.BadZipFile,
-        RuntimeError,
-        NotImplementedError,
-    ):
-        raise HTTPException(
-            422,
-            "Designpaket ungültig. Version 1/2 und vollständigen Vertrag verwenden; ZIP ohne fremde Rootdateien, Duplikate oder unsichere Pfade.",
-        )
+    from .frontend_packages import parse_package
+    return parse_package(content, filename)
+
 
 
 def check_config(db, config):
@@ -344,7 +314,10 @@ def check_config(db, config):
             )
         )
 
-    resolve(db, c.template)
+    manifest = resolve(db, c.template)
+    if manifest["version"] == 3:
+        from .frontend_packages import package_intact
+        add("package", "Frontend-Dateien vollständig", package_intact(db, c.template), "HTML, Code, Styles, Bilder und Schriften müssen unverändert vorhanden sein.")
     add(
         "template",
         "Frontend-Vertrag",
@@ -353,7 +326,16 @@ def check_config(db, config):
     )
     for key in ["logo", "favicon", "hero_image", "approach_image"]:
         value = getattr(c, key)
-        if value.startswith("/api/"):
+        if value.startswith("/api/public/frontend/"):
+            from .frontend_packages import package_file
+            try:
+                identity, name = value[len("/api/public/frontend/"):].split("/", 1)
+                package_file(db, identity, name)
+                ok = True
+            except (HTTPException, ValueError):
+                ok = False
+            add(key, "Paketbild: " + key, ok, "Die Bilddatei muss im gespeicherten Frontend-Paket vorhanden sein.")
+        elif value.startswith("/api/"):
             f = db.get(File, value.rsplit("/", 1)[-1])
             add(
                 key,

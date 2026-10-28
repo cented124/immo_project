@@ -41,6 +41,7 @@ from .builder import (
     domain_name,
 )
 from .project import export_project
+from .frontend_packages import store_package, package_file, valid_preview, PACKAGE_CSP, package_intact
 
 SESSION_COOKIE = os.getenv("SESSION_COOKIE_NAME", "raumwerk_session")
 
@@ -361,7 +362,7 @@ def public_config(db=Depends(db_session)):
 @app.get("/api/admin/config")
 def get_config(user=Depends(current), db=Depends(db_session)):
     return {
-        "draft": presentation(db, db.get(Setting, "draft").value),
+        "draft": presentation(db, db.get(Setting, "draft").value, preview=True),
         "published": presentation(db, cfg(db)),
     }
 
@@ -381,12 +382,20 @@ def save_config(data: Config, user=Depends(admin), db=Depends(db_session)):
 @app.post("/api/admin/config/publish")
 def publish_config(user=Depends(admin), db=Depends(db_session)):
     config = Config.model_validate(db.get(Setting, "draft").value)
-    resolve(db, config.template)
+    manifest = resolve(db, config.template)
+    if manifest["version"] == 3 and not package_intact(db, config.template):
+        raise HTTPException(422, "Frontend-Dateien fehlen oder wurden verändert. Bitte ein vollständiges neues Paket importieren.")
     if config.modules.disclosure and not config.disclosure_pdf:
         raise HTTPException(422, "Zuerst eigenes PDF hochladen")
     for field in ["logo", "favicon", "hero_image", "approach_image"]:
         value = getattr(config, field)
-        if value.startswith("/api/"):
+        if value.startswith("/api/public/frontend/"):
+            try:
+                identity, name = value[len("/api/public/frontend/"):].split("/", 1)
+                package_file(db, identity, name)
+            except (HTTPException, ValueError):
+                raise HTTPException(422, "Frontend-Bilddatei fehlt")
+        elif value.startswith("/api/"):
             file = db.get(File, value.rsplit("/", 1)[-1])
             if not file or file.purpose != "brand":
                 raise HTTPException(422, "Ungültige Unternehmensdatei")
@@ -1346,6 +1355,8 @@ def validate_manifest(data: Manifest, user=Depends(admin)):
 
 @app.post("/api/admin/templates/import", status_code=201)
 def import_template(data: Manifest, user=Depends(admin), db=Depends(db_session)):
+    if data.version == 3:
+        raise HTTPException(422, "Bitte das vollständige Frontend-ZIP im Frontend-Studio importieren")
     if any(m["id"] == data.id for m in library(db)):
         raise HTTPException(409, "Diese Template-ID ist bereits vorhanden")
     db.add(Setting(key="template_" + data.id, value=data.model_dump()))
@@ -1393,13 +1404,19 @@ async def design_upload(file):
 
 @app.post("/api/admin/builder/design/validate")
 async def check_design(file: UploadFile, user=Depends(admin), db=Depends(db_session)):
-    m = await design_upload(file)
+    package = await design_upload(file)
+    m = package.manifest
     available = not any(x["id"] == m.id for x in library(db))
     return {
         "valid": True,
         "available": available,
         "manifest": m,
-        "message": "Seiten, Aktionen und Theme geprüft. Quellcode im Referenzordner wird nicht ausgeführt."
+        "files": len(package.files),
+        "bytes": sum(len(raw) for raw in package.files.values()),
+        "images": sum(name.lower().endswith((".png", ".jpg", ".webp", ".jpeg", ".gif", ".ico")) for name in package.files),
+        "replaces": list(m.assets),
+        "message": "Vollständiges Frontend mit HTML, CSS, JavaScript und Bildern bereit. Wird zuerst nur als Entwurf übernommen."
+        if available and m.version == 3 else "Dieses ältere Manifest übernimmt nur Theme-Werte, keinen Quellcode und keine Bilder."
         if available
         else "Diese ID ist bereits vorhanden. Die KI muss eine neue ID vergeben.",
     }
@@ -1407,23 +1424,36 @@ async def check_design(file: UploadFile, user=Depends(admin), db=Depends(db_sess
 
 @app.post("/api/admin/builder/design/import", status_code=201)
 async def install_design(file: UploadFile, user=Depends(admin), db=Depends(db_session)):
-    m = await design_upload(file)
+    package = await design_upload(file)
+    m = package.manifest
     if any(x["id"] == m.id for x in library(db)):
         raise HTTPException(409, "Diese Frontend-ID ist bereits vorhanden")
     c = Config.model_validate(db.get(Setting, "draft").value)
     c.template = m.id
+    for slot, name in m.assets.items():
+        setattr(c, slot, "/api/public/frontend/" + m.id + "/" + name)
     if m.theme:
         c.primary, c.accent, c.font = m.theme.primary, m.theme.accent, m.theme.font
         c.frontend_theme = type(c.frontend_theme).model_validate(
             m.theme.model_dump(exclude={"primary", "accent", "font"})
         )
-    db.add(Setting(key="template_" + m.id, value=m.model_dump()))
-    db.get(Setting, "draft").value = c.model_dump()
-    add_revision(db, user, c.model_dump(), "import", "Frontend importiert: " + m.name)
-    audit(db, user, "Frontend-Datenpaket importiert: " + m.id)
-    db.commit()
+    target = None
+    try:
+        if m.version == 3:
+            target = store_package(db, package)
+        db.add(Setting(key="template_" + m.id, value=m.model_dump()))
+        db.get(Setting, "draft").value = c.model_dump()
+        add_revision(db, user, c.model_dump(), "import", "Frontend importiert: " + m.name)
+        audit(db, user, "Frontend-Paket importiert: " + m.id)
+        db.commit()
+    except BaseException:
+        db.rollback()
+        if target:
+            import shutil
+            shutil.rmtree(target, ignore_errors=True)
+        raise
     return {
-        "config": presentation(db, c.model_dump()),
+        "config": presentation(db, c.model_dump(), preview=True),
         "message": "Frontend als Entwurf importiert. Vorschau prüfen, danach veröffentlichen.",
     }
 
@@ -1534,3 +1564,50 @@ def restore_config_version(rid: int, user=Depends(admin), db=Depends(db_session)
     audit(db, user, "Konfiguration als Entwurf wiederhergestellt: " + str(rid))
     db.commit()
     return presentation(db, config)
+
+
+@app.get('/api/public/frontend-sdk.js')
+def frontend_sdk():
+    return FileResponse(Path(__file__).resolve().parents[2] / 'frontend/portable/sdk.js', media_type='text/javascript', headers={'Cache-Control': 'no-cache', 'X-Content-Type-Options': 'nosniff'})
+
+
+def frontend_response(db, identity, name):
+    path, mime = package_file(db, identity, name)
+    headers = {'Content-Security-Policy': PACKAGE_CSP, 'X-Content-Type-Options': 'nosniff', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer'}
+    if mime == 'text/html':
+        html = path.read_text(encoding='utf-8')
+        script = '<script src="/api/public/frontend-sdk.js"></script>'
+        # The bridge must be installed before the package's own code.
+        if re.search(r'<head(?:\s[^>]*)?>', html, re.I):
+            html = re.sub(r'(<head(?:\s[^>]*)?>)', lambda m: m[1] + script, html, count=1, flags=re.I)
+        else:
+            html = script + html
+        return Response(html, media_type=mime, headers=headers)
+    return FileResponse(path, media_type=mime, headers=headers)
+
+
+@app.get('/api/public/frontend/{identity}/{name:path}')
+def public_frontend_file(identity: str, name: str, db=Depends(db_session)):
+    config = cfg(db)
+    url = '/api/public/frontend/' + identity + '/' + name
+    if config['template'] != identity and url not in [config.get(k) for k in ['logo', 'favicon', 'hero_image', 'approach_image']]:
+        raise HTTPException(404)
+    return frontend_response(db, identity, name)
+
+
+@app.get('/api/public/frontend-preview/{token}/{identity}/{name:path}')
+def preview_frontend_file(token: str, identity: str, name: str, db=Depends(db_session)):
+    if not valid_preview(identity, token) or not db.get(Setting, 'template_' + identity):
+        raise HTTPException(404)
+    if name.startswith('__media/'):
+        fid = name[len('__media/'):]
+        file = db.get(File, fid)
+        if not file or file.purpose not in {'brand', 'image', 'template'}:
+            raise HTTPException(404)
+        return FileResponse(DATA / 'files' / file.id, media_type=file.mime, headers={'Cache-Control': 'no-store', 'Content-Security-Policy': "sandbox; default-src 'none'", 'Access-Control-Allow-Origin': '*'})
+    return frontend_response(db, identity, name)
+
+
+@app.get('/api/admin/builder/example')
+def frontend_example(user=Depends(admin)):
+    return FileResponse(Path(__file__).resolve().parents[2] / 'frontend/portable/example.zip', media_type='application/zip', filename='Raumwerk-Frontend-Beispiel.zip')

@@ -80,6 +80,31 @@ async function login(page, url) {
     .click();
   await expect(page.getByRole("heading", { name: "Übersicht." })).toBeVisible();
 }
+async function checkExport(context, url, headers) {
+  const exported = await context.request.post(
+    url + "/api/admin/builder/project",
+    { headers, data: { domain: "" } },
+  );
+  if (!exported.ok()) throw new Error("native project export failed");
+  const exportPath = path.join(runtime, "test-export.zip");
+  fs.writeFileSync(exportPath, await exported.body());
+  try {
+    const checked = cp.spawnSync(
+      python,
+      [
+        "-X",
+        "utf8",
+        path.join(root, "scripts/check-desktop-export.py"),
+        exportPath,
+      ],
+      { cwd: root, encoding: "utf8", timeout: 120000, windowsHide: true },
+    );
+    if (checked.status !== 0)
+      throw new Error("native export/import failed: " + checked.stderr);
+  } finally {
+    fs.rmSync(exportPath, { force: true });
+  }
+}
 (async () => {
   try {
     // Never terminate a process occupying port 3000: our own guard must survive stop.
@@ -108,13 +133,20 @@ async function login(page, url) {
         viewport: { width: 1280, height: 900 },
       }),
       page = await context.newPage();
+    page.on("console", (message) => {
+      if (message.type() === "error") console.error("Native browser: " + message.text().replace(/frontend-preview\/[^/]+\//g, "frontend-preview/[REDACTED]/"));
+    });
     const failed = await context.request.post(first.url + "/__desktop/setup", {
       data: { email: "attacker@example.com", password, repeat: password },
     });
     if (failed.status() !== 403) throw new Error("setup must require its key");
     await page.goto(open.url);
-    fs.mkdirSync(path.join(root, ".runtime/test-evidence"), { recursive: true });
-    await expect(page.getByRole("heading", { name: /Dein Baukasten/ })).toBeVisible();
+    fs.mkdirSync(path.join(root, ".runtime/test-evidence"), {
+      recursive: true,
+    });
+    await expect(
+      page.getByRole("heading", { name: /Dein Baukasten/ }),
+    ).toBeVisible();
     await page.screenshot({
       path: path.join(root, ".runtime/test-evidence/setup.png"),
       fullPage: true,
@@ -235,24 +267,7 @@ async function login(page, url) {
       { data: { email: "second@example.com", password, repeat: password } },
     );
     if (rejected.status() !== 409) throw new Error("setup stayed open");
-    const exported = await context.request.post(
-      first.url + "/api/admin/builder/project",
-      { headers, data: { domain: "" } },
-    );
-    if (!exported.ok()) throw new Error("native project export failed");
-    const exportPath = path.join(runtime, "test-export.zip");
-    fs.writeFileSync(exportPath, await exported.body());
-    try {
-      const checked = cp.spawnSync(
-        python,
-        ["-X", "utf8", path.join(root, "scripts/check-desktop-export.py"), exportPath],
-        { cwd: root, encoding: "utf8", timeout: 120000, windowsHide: true },
-      );
-      if (checked.status !== 0)
-        throw new Error("native export/import failed: " + checked.stderr);
-    } finally {
-      fs.rmSync(exportPath, { force: true });
-    }
+    await checkExport(context, first.url, headers);
     fs.mkdirSync(path.join(root, ".runtime", "test-evidence"), {
       recursive: true,
     });
@@ -291,6 +306,82 @@ async function login(page, url) {
       ).length !== 1
     )
       throw new Error("data lost after restart");
+    await page.goto(second.url + "/admin/studio");
+    await page
+      .getByLabel("Frontend-Designpaket")
+      .setInputFiles(path.join(root, "frontend/portable/example.zip"));
+    await expect(
+      page.getByText(/Dateien · .* Bilder · vollständiges Frontend/),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Als Entwurf übernehmen" }).click();
+    await expect(
+      page.getByRole("link", { name: "Vorschau öffnen" }),
+    ).toBeVisible();
+    await page.goto(second.url + "/?preview=1");
+    await expect(
+      page
+        .frameLocator("iframe")
+        .getByRole("heading", { name: /Räume für heute/ }),
+    ).toBeVisible();
+    await page.goto(second.url + "/admin/studio");
+    await page
+      .getByRole("button", { name: "Veröffentlichen", exact: true })
+      .click();
+    await expect(page.getByRole("status")).toContainText(
+      "Änderungen sind veröffentlicht",
+    );
+    await customer.goto(second.url + "/immobilien/native-test-wohnung");
+    const customSite = customer.frameLocator("iframe");
+    await expect(
+      customSite.getByRole("heading", {
+        name: "NATIVTEST – kein echtes Angebot",
+        level: 1,
+      }),
+    ).toBeVisible();
+    await customSite
+      .getByRole("button", { name: "Interesse an dieser Immobilie" })
+      .click();
+    await customSite.getByLabel("Vorname *").fill("Frontend");
+    await customSite.getByLabel("Nachname *").fill("Pakettest");
+    await customSite
+      .getByLabel("E-Mail *", { exact: true })
+      .fill("paket@example.com");
+    await customSite
+      .getByLabel("Ihre Nachricht *")
+      .fill(
+        "Synthetische Objektanfrage aus dem importierten vollständigen Frontend.",
+      );
+    await customSite.getByRole("checkbox").check();
+    await customSite.getByRole("button", { name: "Anfrage absenden" }).click();
+    await expect(
+      customSite.getByRole("heading", {
+        name: "Vielen Dank für Ihr Vertrauen.",
+      }),
+    ).toBeVisible();
+    await checkExport(context, second.url, headers);
+    await page.goto(second.url + "/admin/inquiries");
+    await expect(
+      page.getByText("Frontend Pakettest", { exact: true }),
+    ).toBeVisible();
+    if (
+      (
+        await (
+          await context.request.get(second.url + "/api/admin/deliveries")
+        ).json()
+      ).length
+    )
+      throw new Error("unexpected package delivery");
+    command("backup");
+    command("launch");
+    await customer.goto(state().url + "/immobilien/native-test-wohnung");
+    await expect(
+      customer
+        .frameLocator("iframe")
+        .getByRole("heading", {
+          name: "NATIVTEST – kein echtes Angebot",
+          level: 1,
+        }),
+    ).toBeVisible();
     command("stop");
     fs.writeFileSync(
       path.join(root, ".runtime/test-evidence/result.json"),
@@ -303,6 +394,7 @@ async function login(page, url) {
           occupied_port_preserved: guarded,
           inquiry: true,
           project_export_and_import: true,
+          complete_frontend_import_and_object_inquiry: true,
           restart: true,
           encrypted_key_preserved: true,
           backup: true,

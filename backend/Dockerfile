@@ -11,6 +11,7 @@ COPY --chown=app:app project/README.md project/README.md
 COPY --chown=app:app frontend/app frontend/app
 COPY --chown=app:app frontend/components frontend/components
 COPY --chown=app:app frontend/public frontend/public
+COPY --chown=app:app frontend/portable frontend/portable
 COPY --chown=app:app frontend/tests frontend/tests
 COPY --chown=app:app frontend/*.json frontend/*.ts frontend/Dockerfile frontend/AGENTS.md frontend/
 COPY --chown=app:app scripts scripts

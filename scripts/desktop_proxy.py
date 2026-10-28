@@ -161,10 +161,30 @@ class Handler(BaseHTTPRequestHandler):
         if self.headers.get("Host") not in {f"127.0.0.1:{port}", f"localhost:{port}"}:
             raise RequestError(403, "Bitte die Adresse aus STARTEN.cmd verwenden")
         origin = self.headers.get("Origin")
-        if origin and origin not in {
-            f"http://127.0.0.1:{port}",
-            f"http://localhost:{port}",
-        }:
+        route = urlsplit(self.path).path
+        opaque_asset = (
+            origin == "null"
+            and self.command in {"GET", "HEAD"}
+            and (
+                route == "/api/public/frontend-sdk.js"
+                or route.startswith(
+                    (
+                        "/api/public/frontend/",
+                        "/api/public/frontend-preview/",
+                        "/api/public/files/",
+                    )
+                )
+            )
+        )
+        if (
+            origin
+            and not opaque_asset
+            and origin
+            not in {
+                f"http://127.0.0.1:{port}",
+                f"http://localhost:{port}",
+            }
+        ):
             raise RequestError(403, "Unzulaessiger Ursprung")
 
     def dispatch(self):

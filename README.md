@@ -28,6 +28,10 @@ Lokale Daten liegen unter `DATEN`, Programme getrennt unter `.runtime`. `STOPPEN
 
 Alternativ auf dieser Repository-Seite **Code → Download ZIP** auswählen. Öffne nach dem Entpacken den Ordner, in dem `STARTEN.cmd` liegt. `STARTEN.cmd` richtet die lokale Anwendung ohne Docker ein; `STOPPEN.cmd` erhält deine Daten. Die Downloads enthalten vollständigen Quellcode und die leere PDF-Vorlage, aber keine Zugangsdaten oder Kundendatenbanken.
 
+## Ein eigenes KI-Frontend importieren
+
+**Ein fertiges ZIP genügt:** HTML, CSS, JavaScript, Bilder und lokale Schriften werden gemeinsam importiert. Das Frontend-Studio prüft automatisch und übernimmt zuerst nur einen Entwurf. [Einfache Anleitung und Windows-Update](docs/FRONTEND-IMPORT.md) · [Fertiges London-Frontend aus raumwerk_test](downloads/Westminster-Frontend.zip). Ältere JSON-Manifeste übernehmen nur Theme-Werte.
+
 ## Schnellstart: lokal
 
 Voraussetzungen: Python 3.12+, Node 24, npm. Aus dem bestehenden Checkout arbeiten; eine Cloud-Aufgabe ist bereits isoliert und braucht keinen weiteren Git-Worktree.

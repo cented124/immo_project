@@ -1,46 +1,39 @@
-# Frontend-Studio: Firma → KI-Paket → Import → Prüfung
+# Frontend-Studio und KI-Abnahme
 
-Eine Instanz gehört zu einer Firma. Raumwerk und das Referenzfrontend bleiben firmenneutral. Die öffentliche Firmenidentität kommt aus der Konfiguration, nicht aus fest eingebauten Marken im Code.
+Für Endnutzer: [Einfacher ZIP-Import](FRONTEND-IMPORT.md). Für Entwickler und KI: [Browserpaket und SDK](FRONTEND-PACKAGES.md).
 
-1. Unter **Firma & Rechtliches** Firmennamen, Anschrift, Vertretung und erforderliche Registerdaten eintragen. Ein Impressumsentwurf kann aus den Daten erzeugt werden; anschließend fachlich ergänzen und prüfen. Datenschutz muss zu den tatsächlich eingesetzten Diensten passen. Änderungen speichern.
-2. Unter **Frontend-Studio** Zielgruppe, Stil und weitere Wünsche eintragen. **Prompt erstellen** übernimmt die aktuellen Eingaben zuerst in den gespeicherten Entwurf. Der Prompt kann kopiert oder als Markdown gespeichert werden. **Referenzpaket exportieren** lädt ein ZIP mit demselben Firmenprofil, Prompt, Manifest, JSON-Schemas, Vertrag, Checkliste und vollständigen baubaren Quellen herunter.
-3. Prompt und ZIP einer beliebigen KI geben. Keine SMTP-/Telegram-Zugangsdaten oder echten Anfragen weitergeben; diese sind im Paket nicht enthalten. Firmendaten und Rechtstexte sind enthalten: deren Weitergabe an die gewählte KI verantwortet der Betreiber.
-4. Die KI liefert ein eindeutiges `manifest.json`, Version 2. Dieses oder ein ZIP mit `manifest.json` auf oberster Ebene auswählen. **Paket prüfen**, Ergebnis ansehen, dann **Als Entwurf übernehmen**. Es wird nichts automatisch veröffentlicht. Neue IDs verwenden; bestehende Designs werden nicht überschrieben.
-5. Vorschau, technische Prüfung und die folgende Checkliste durchgehen. Erst danach **Veröffentlichen**. Unter **Versionen** können frühere Konfigurationen verglichen und als Entwurf wiederhergestellt werden.
+## Der Ablauf
 
-## Zwei Wege für KI-Frontends
+1. Firmen-/Registerdaten und Gestaltungswünsche im Studio speichern.
+2. Das Referenzpaket herunterladen und der KI geben. PROMPT.md enthält die aktuellen Daten und den verbindlichen Vertrag.
+3. Die KI gestaltet die öffentliche Website, baut und prüft sie und liefert **genau eine importfertige Raumwerk-Frontend.zip**. Ein nacktes Manifest oder ein Quellcode-Repository ist kein Ersatz für das fertige Frontend.
+4. Endnutzer wählt dieses ZIP im Studio. Die automatische Prüfung zeigt Namen, Dateianzahl, Bilder und Bildersetzungen. Als Entwurf übernehmen und Vorschau ansehen.
+5. Veröffentlichung erfolgt bewusst nach Abnahme. Versionen können frühere Konfigurationen als Entwurf zurückholen.
 
-**Direkt importierbares Designpaket:** Das Manifest steuert den vorhandenen vollständig angebundenen Renderer. Verfügbar sind Atelier/Editorial, Farben, lokale Schrift, Hintergrund/Textfarbe, Hero als Bildfläche oder geteilte Ansicht, Karten als Raster/Liste, Rundung, Inhaltsbreite, Abschnittsabstände und Überschriftengröße. Die zulässigen Werte stehen in `schemas/manifest.schema.json`; zusätzliche Felder werden abgewiesen. Inhalte und Seiten werden im Baukasten bearbeitet. Version 1 bleibt für bisherige Adapter-Manifeste unterstützt.
+Ein bereits fertiges Beispiel liegt unter `frontend/portable/example.zip` und ist im Studio separat downloadbar. Der Buildhelfer `node scripts/build-frontend-package.cjs --id eindeutige-id --name "Mein Design"` bündelt öffentliche React-Komponenten, CSS, Bilder und Schriften. Keine manuellen Einbauschritte beim Endnutzer. Ältere Version-1/2-Manifeste bleiben reine Adapter-/Themeimporte; Quellen darin werden nicht installiert.
 
-**Freies React-/CSS-Frontend:** Das Paket enthält unter `reference/` den kompletten Projektquellcode inklusive Backend und isolierter Tests. Die KI kann daraus ein frei gestaltetes Frontend entwickeln. Diese Quelltexte werden bewusst nicht im laufenden Admin hochgeladen und ausgeführt. Sie müssen im Projekt eingebaut, gebaut und getestet werden; anschließend wird das veränderte Gesamtprojekt per Docker deployt. Ein Manifest allein installiert keine React-Komponenten. Die nachfolgende Suite ist dafür verbindlich. Beliebige KI-Ausgaben werden nicht pauschal als kompatibel bezeichnet.
+## Checkliste für die KI
 
-ZIP-Import erlaubt nur das Manifest, die Begleitdateien README/PROMPT/CONTRACT/CHECKLIST/company sowie Referenzdateien unter `reference/` und Schemas unter `schemas/`. Referenzdateien werden weder extrahiert noch ausgeführt. Unsichere Pfade, Symlinks, doppelte Einträge, verschlüsselte Archive und übergroße Pakete werden abgewiesen. Maximal 10 MB komprimiert, 32 MB entpackt, 400 Einträge; Manifest maximal 128 KB.
+- Alle aktivierten Seitentypen aus Config, Navigation, Impressum, Datenschutz und 404-/Modulzustände vorhanden.
+- Startseite mit geordneten Config.sections, Firmenlogo, Texten, Bildern, Farben, SEO und Footer.
+- Angebote filtern/sortieren/blättern; Leerzustand und Exposé nach Slug; echte property_id und korrekte Preis-/Energiedaten.
+- Kontakt/Objekt-/Seitenformulare: Pflichtfelder, Datenschutzzustimmung, Idempotenz, Honeypot, Telefonpflicht, verständliche Zustände, Erfolg nach 202.
+- PDF-Download und private Rückgabe mit Kennung, E-Mail und persönlichem Rückgabecode; Datei bleibt privat.
+- Vorschau: Navigation behält preview=1, Formularbuttons sind gesperrt, keine Anfragen und keine Analysen. Öffentliche Website bleibt bis zur Veröffentlichung unverändert.
+- Kein Admin-/Auth-/Outbox-Code im ZIP, keine Tokens, Passwörter oder Empfängerlisten. Keine festen Firmendaten und keine erfundenen Angebote.
+- HTML/CSS/JS/Schriften/Bilder vollständig lokal im Browserpaket; keine Serverfunktionen, node_modules, Paketinstallation oder CDN nötig.
+- Tastatur, Formularlabels, Kontraste, mobile Breite ab 360 px, Fehlerfälle und leere Angebote visuell prüfen.
+- Tatsächlich das fertige ZIP importieren und testen, nicht nur Quellcode oder Manifest prüfen. Der Host blockiert private API-Zugriffe und Schreibaktionen in der Vorschau zusätzlich.
 
-## Abnahmecheckliste
+## Nachweise
 
-- [ ] Firmendaten und Impressum stammen aus Config; kein Unternehmensname im Komponentenquellcode fest eingebaut.
-- [ ] Startseite, Suche, Exposé, aktive Inhaltsseiten, Kontakt, Impressum, Datenschutz und optional Selbstauskunft vorhanden.
-- [ ] Geordnete Abschnitte, Modulsichtbarkeit und deaktivierte direkte Routen korrekt.
-- [ ] Echte öffentliche Immobilien aus API mit Filtern, Sortierung und Pagination; keine Entwürfe oder privaten Objektdateien sichtbar.
-- [ ] Formulare mit Pflichtfeldern, bedingter Telefonpflicht, Datenschutz, Honeypot, Idempotenz, korrekter Objekt-/Seitenzuordnung.
-- [ ] Erfolg nur nach Annahme durch das Backend; Zustellung über E-Mail/Telegram separat überprüfbar.
-- [ ] PDF-Download und private Rückgabe mit Rückgabecode; vertrauliche Inhalte bleiben privat.
-- [ ] Authentifizierte Vorschau erhält ihre Navigation, versendet nichts und zählt keine Analysen.
-- [ ] Lade-, Leer-, Fehler-, Wiederholungs- und Annahmezustände verständlich.
-- [ ] Mobil ab 360px ohne seitliches Scrollen; Tastaturbedienung, Labels, Fokus und Farbkontraste geprüft.
-- [ ] SEO/404-Regeln, Admin, Authentifizierung und Rollen unverändert funktionsfähig.
-- [ ] Keine Geheimnisse, Fremdtracker oder Remote-Scripts im Frontend.
-- [ ] TypeScript-Prüfung, Produktionsbuild, Backend- und Browsertests erfolgreich.
-
-```bash
+```sh
 PYTHONPATH=backend .venv/bin/pytest backend/tests -q
 npm --prefix frontend run typecheck
 npm --prefix frontend run build
 npm --prefix frontend run test:e2e
 ```
 
-Die technische Prüfung im Studio prüft Datenvertrag und verknüpfte Dateien. Rechtliche Vollständigkeit, beliebigen fremden Programmcode und die DNS-/HTTPS-Erreichbarkeit eines späteren Servers kann sie nicht beweisen. Hinweise werden deshalb getrennt von technischen Fehlern angezeigt.
+Die Browserpaket-Tests spielen Import, Vorschau, Veröffentlichung, getrennten Interessenten, Kontakt, PDF-Download/-Rückgabe und Adminsicht auf Desktop und Mobil durch. `scripts/test-desktop.cjs` prüft zusätzlich native Prozesse, Objektanfrage aus dem importierten Frontend, Export-/Seedimport, Neustart und Sicherung. Keine automatisierten echten E-Mails oder Telegram-Nachrichten senden.
 
-## Versionsverlauf
-
-Die letzten 100 Konfigurationsstände werden bei Speichern, Veröffentlichung, Designimport und Wiederherstellung festgehalten. Der Vergleich zeigt die gespeicherten Werte, nicht nur ein Datum. Wiederherstellung sichert den bisherigen Entwurf und stellt ausschließlich die Konfiguration als neuen Entwurf her. Immobilien, Anfragen, Zugangsdaten und Integrationen werden nicht zurückgesetzt. Das ersetzt kein vollständiges verschlüsseltes Backup.
+Schemas und API-Vertrag sind im KI-Paket enthalten. Für frei veränderten Code Prüfbericht und offene Punkte wahrheitsgemäß angeben. Der eigene Browserbuild rendert im isolierten Rahmen; Details und SEO-/SSR-Grenzen stehen im Paketvertrag. Ein fremder VPS, DNS oder öffentliches Zertifikat ist erst nach tatsächlicher Prüfung als live anzusehen.

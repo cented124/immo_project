@@ -42,3 +42,4 @@ jobs:
         run: |
           sha256sum -c Raumwerk-Windows.sha256.txt
           if [ -f Kuestenklar-Demo.sha256.txt ]; then sha256sum -c Kuestenklar-Demo.sha256.txt; fi
+          if [ -f Westminster-Frontend.sha256.txt ]; then sha256sum -c Westminster-Frontend.sha256.txt; fi

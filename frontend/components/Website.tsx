@@ -30,6 +30,7 @@ import {
   MoveUpRight,
 } from "lucide-react";
 import { api, money } from "./api";
+import CustomFrontend from "./CustomFrontend";
 type Any = any;
 const PreviewContext = createContext(false);
 function SiteLink(props: React.ComponentProps<typeof NextLink>) {
@@ -82,9 +83,11 @@ function track(c: Any, kind: string, path: string) {
 export default function Website({
   path,
   initialConfig,
+  embedded = false,
 }: {
   path: string[];
   initialConfig?: Any;
+  embedded?: boolean;
 }) {
   const [c, setC] = useState<Any>(initialConfig || null),
     [error, setError] = useState(""),
@@ -100,7 +103,7 @@ export default function Website({
       .catch((e) => setError(e.message));
   }, []);
   useEffect(() => {
-    if (c && !preview && trackedRoute.current !== route) {
+    if (c && !preview && (embedded || !c.frontend_package) && trackedRoute.current !== route) {
       trackedRoute.current = route;
       track(c, "pageview", "/" + route);
     }
@@ -121,6 +124,8 @@ export default function Website({
         <p>Räume für neue Perspektiven.</p>
       </div>
     );
+  if (!embedded && c.frontend_package)
+    return <CustomFrontend config={c} path={path} preview={preview} />;
   const active = (slug: string) =>
     c.pages.find((p: Any) => p.slug === slug && p.enabled);
   const nav = [

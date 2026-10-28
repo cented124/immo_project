@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -188,6 +188,9 @@ export function FrontendStudio({
   const [file, setFile] = useState<File | null>(null),
     [report, setReport] = useState<any>(null),
     [checks, setChecks] = useState<any>(null);
+  const fileVersion = useRef(0);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [importedName, setImportedName] = useState("");
   async function action(job: () => Promise<void>) {
     setBusy(true);
     setMessage("");
@@ -214,17 +217,22 @@ export function FrontendStudio({
     setPrompt((await api("/admin/builder/prompt")).prompt);
     setMessage("Prompt aus dem gespeicherten Firmenprofil erstellt.");
   }
-  async function validate() {
-    if (!file)
+  async function validate(chosen = file, version = fileVersion.current) {
+    setReport(null);
+    if (!chosen)
       throw new Error("Bitte zuerst eine JSON- oder ZIP-Datei auswählen.");
+    if (chosen.size > 10 * 1024 * 1024)
+      throw new Error("Das Frontend-ZIP darf maximal 10 MB groß sein. Bitte die KI bitten, Bilder zu verkleinern.");
     const data = new FormData();
-    data.append("file", file);
+    data.append("file", chosen);
     const result = await api("/admin/builder/design/validate", {
       method: "POST",
       body: data,
     });
-    setReport(result);
-    setMessage(result.message);
+    if (version === fileVersion.current) {
+      setReport(result);
+      setMessage(result.message);
+    }
   }
   return (
     <>
@@ -438,9 +446,9 @@ export function FrontendStudio({
             >
               <FileCode2 size={42} strokeWidth={1.2} />
               <p>
-                Gib der KI den Prompt und dieses ZIP. Das Referenzfrontend
-                unterstützt alle Funktionen des Baukastens und bleibt
-                firmenneutral.
+                Gib der KI dieses ZIP und deinen Gestaltungswunsch. Sie soll dir
+                genau eine Datei zurückgeben: Raumwerk-Frontend.zip. Dieses
+                fertige Paket enthält auch Bilder, Schriften und Code.
               </p>
               <button
                 className="small-button"
@@ -461,6 +469,24 @@ export function FrontendStudio({
                 <Download size={16} />
                 Referenzpaket exportieren
               </button>
+              <button
+                className="small-button"
+                disabled={busy}
+                onClick={() =>
+                  action(async () => {
+                    await download(
+                      "/admin/builder/example",
+                      "Raumwerk-Frontend-Beispiel.zip",
+                    );
+                    setMessage(
+                      "Fertiges Beispiel heruntergeladen. Du kannst dieses ZIP direkt unten importieren.",
+                    );
+                  })
+                }
+              >
+                <Download size={16} />
+                Beispiel-ZIP zum Importieren
+              </button>
             </Card>
             <ThemeControls config={c} setConfig={set} />
           </div>
@@ -471,34 +497,49 @@ export function FrontendStudio({
           <div className="studio-grid lower-grid">
             <Card
               title="Frontend importieren"
-              text="KI-Ergebnis als manifest.json oder ZIP auswählen."
+              text="Eine ZIP-Datei rein. Dein vollständiges Frontend samt Bildern kommt mit."
               className="import-card"
             >
               <div id="frontend-import">
                 <label className="package-upload">
                   <Upload size={28} />
-                  <strong>Designpaket auswählen</strong>
-                  <span>JSON oder ZIP · maximal 10 MB</span>
+                  <strong>
+                    {file ? file.name : "Raumwerk-Frontend.zip auswählen"}
+                  </strong>
+                  <span>
+                    {busy
+                      ? "Paket wird geprüft …"
+                      : "HTML · CSS · JavaScript · Bilder · Schriften · bis 10 MB"}
+                  </span>
                   <input
+                    ref={fileInput}
+                    disabled={busy}
                     aria-label="Frontend-Designpaket"
                     type="file"
                     accept=".json,.zip"
                     onChange={(e) => {
-                      setFile(e.target.files?.[0] || null);
+                      const chosen = e.target.files?.[0] || null;
+                      const version = ++fileVersion.current;
+                      setFile(chosen);
                       setReport(null);
+                      setImportedName("");
+                      if (chosen) action(() => validate(chosen, version));
                     }}
                   />
                 </label>
                 <p className="card-hint">
-                  Direkter Import unterstützt geprüfte Layout- und Theme-Daten.
-                  Freie React-/CSS-Quellen liegen im Referenzpaket und erfordern
-                  Einbau, Build und Tests; sie werden hier nicht installiert.
+                  Nicht entpacken und keine Dateien von Hand kopieren. Das ZIP
+                  wird automatisch geprüft. Danach als Entwurf übernehmen,
+                  Vorschau ansehen und erst dann veröffentlichen. Firmenangaben,
+                  Immobilien, Anfragen und Zugänge bleiben erhalten. Ältere
+                  JSON-Manifeste importieren weiterhin nur Farben und
+                  Layoutwerte.
                 </p>
                 <div className="button-row">
                   <button
                     className="small-button"
                     disabled={busy || !file}
-                    onClick={() => action(validate)}
+                    onClick={() => action(() => validate())}
                   >
                     <ShieldCheck size={16} />
                     Paket prüfen
@@ -516,7 +557,10 @@ export function FrontendStudio({
                           { method: "POST", body: data },
                         );
                         set(result.config);
+                        setImportedName(report.manifest.name);
                         setReport(null);
+                        setFile(null);
+                        if (fileInput.current) fileInput.current.value = "";
                         setMessage(result.message);
                       })
                     }
@@ -530,11 +574,47 @@ export function FrontendStudio({
                     <div>
                       <strong>{report.manifest.name}</strong>
                       <p>
-                        Version {report.manifest.version} ·{" "}
-                        {report.manifest.pages.length} Seitentypen ·{" "}
-                        {report.manifest.actions.length} Aktionen
+                        {report.manifest.version === 3
+                          ? `${report.files} Dateien · ${report.images} Bilder · vollständiges Frontend`
+                          : "Älteres Theme · ohne eigenen Code oder Bilder"}
                       </p>
+                      {!!report.replaces?.length && (
+                        <small>
+                          Ersetzt diese Designbilder:{" "}
+                          {report.replaces
+                            .map(
+                              (x: string) =>
+                                ({
+                                  hero_image: "Titelbild",
+                                  approach_image: "Beratungsbild",
+                                  logo: "Logo",
+                                  favicon: "Browser-Icon",
+                                })[x],
+                            )
+                            .join(", ")}
+                          . Deine Firmentexte bleiben erhalten.
+                        </small>
+                      )}
                       <small>{report.message}</small>
+                    </div>
+                  </div>
+                )}
+                {importedName && (
+                  <div className="package-report">
+                    <Check size={18} />
+                    <div>
+                      <strong>{importedName} ist als Entwurf bereit.</strong>
+                      <p>
+                        Die öffentliche Website ändert sich erst beim
+                        Veröffentlichen.
+                      </p>
+                      <Link
+                        className="button"
+                        href="/?preview=1"
+                        target="_blank"
+                      >
+                        Vorschau öffnen <ArrowUpRight size={15} />
+                      </Link>
                     </div>
                   </div>
                 )}

@@ -3,6 +3,7 @@
 import copy
 import hashlib
 import os
+import re
 import secrets
 import tempfile
 import zipfile
@@ -14,6 +15,7 @@ from .db import Session, Setting, Property, File, User, DATA
 from .config import Config, PropertyData
 from .templates import Manifest, library
 from .builder import add_sources, json_bytes, check_config
+from .frontend_packages import safe_path
 
 
 class SeedFile(BaseModel):
@@ -42,6 +44,7 @@ class ProjectSeed(BaseModel):
     templates: list[Manifest]
     properties: list[SeedProperty]
     files: list[SeedFile]
+    designs: dict[str, dict[str, dict]] = {}
 
     @model_validator(mode="after")
     def references(self):
@@ -55,6 +58,30 @@ class ProjectSeed(BaseModel):
         if len({p.data.slug for p in self.properties}) != len(self.properties):
             raise ValueError("Doppelte Immobilienpfade")
         files = {f.id: f for f in self.files}
+        manifests = {m.id: m for m in self.templates}
+        for identity, entries in self.designs.items():
+            if (
+                identity not in manifests
+                or manifests[identity].version != 3
+                or not entries
+                or len(entries) > 400
+            ):
+                raise ValueError("Frontend-Dateien ohne passendes Manifest")
+            total = 0
+            for name, info in entries.items():
+                safe_path(name)
+                if (
+                    set(info) != {"size", "sha256"}
+                    or not isinstance(info["size"], int)
+                    or not 0 <= info["size"] <= 10 * 1024 * 1024
+                    or not re.fullmatch(r"[a-f0-9]{64}", str(info["sha256"]))
+                ):
+                    raise ValueError("Ungültige Frontend-Dateimetadaten")
+                total += info["size"]
+            if total > 32 * 1024 * 1024 or manifests[identity].entry not in entries:
+                raise ValueError("Frontend-Paket unvollständig oder zu groß")
+        if any(m.version == 3 and m.id not in self.designs for m in self.templates):
+            raise ValueError("Frontend-Dateien fehlen")
         props = {p.id for p in self.properties}
         for f in self.files:
             if f.property_id is not None and f.property_id not in props:
@@ -70,7 +97,11 @@ class ProjectSeed(BaseModel):
                 raise ValueError("Frontend-Manifest fehlt")
             for key in ["logo", "favicon", "hero_image", "approach_image"]:
                 v = getattr(c, key)
-                if v.startswith("/api/"):
+                if v.startswith("/api/public/frontend/"):
+                    identity, name = v[len("/api/public/frontend/") :].split("/", 1)
+                    if name not in self.designs.get(identity, {}):
+                        raise ValueError("Frontend-Bild fehlt")
+                elif v.startswith("/api/"):
                     f = files.get(v.rsplit("/", 1)[-1])
                     if not f or f.purpose != "brand":
                         raise ValueError("Unternehmensdatei fehlt")
@@ -122,7 +153,7 @@ def export_project(db, domain=""):
     fids = set()
     for c in configs.values():
         for key in ["logo", "favicon", "hero_image", "approach_image"]:
-            if c[key].startswith("/api/"):
+            if c[key].startswith("/api/public/files/"):
                 fids.add(c[key].rsplit("/", 1)[-1])
         if c["disclosure_pdf"]:
             fids.add(c["disclosure_pdf"])
@@ -148,13 +179,22 @@ def export_project(db, domain=""):
                 sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
             )
         )
+    manifests = library(db)
+    designs = {}
+    for manifest in manifests:
+        if manifest["version"] == 3:
+            row = db.get(Setting, "design_" + manifest["id"])
+            if not row:
+                raise ValueError("Frontend-Paketdateien fehlen")
+            designs[manifest["id"]] = row.value
     seed = ProjectSeed(
         version=1,
         export_id=secrets.token_hex(16),
         **configs,
         properties=properties,
         files=media,
-        templates=library(db),
+        templates=manifests,
+        designs=designs,
     )
     fd, filename = tempfile.mkstemp(prefix="raumwerk-projekt-", suffix=".zip")
     os.close(fd)
@@ -165,6 +205,19 @@ def export_project(db, domain=""):
             z.writestr("Raumwerk/deployment.json", json_bytes({"domain": domain}))
             for f in media:
                 z.write(DATA / "files" / f["id"], "Raumwerk/project/files/" + f["id"])
+            for identity, entries in designs.items():
+                for name, info in entries.items():
+                    path = DATA / "designs" / identity / name
+                    if (
+                        not path.is_file()
+                        or path.is_symlink()
+                        or hashlib.sha256(path.read_bytes()).hexdigest()
+                        != info["sha256"]
+                    ):
+                        raise ValueError(
+                            "Eine Frontend-Datei fehlt oder wurde verändert"
+                        )
+                    z.write(path, "Raumwerk/project/designs/" + identity + "/" + name)
             z.writestr(
                 "Raumwerk/EXPORT-LESEN.md",
                 "# Dein fertig konfiguriertes Projekt\n\nWebsite und Admin sind enthalten. Windows: STARTEN.cmd. VPS: siehe docs/DEPLOYMENT.md, dann bash LIVE-STARTEN.sh. Veröffentlichten Stand und Entwurf sowie alle Immobilien inklusive Entwürfen und zugeordneten Medien enthalten. Auch interne Objekt-PDFs sind enthalten; Paket vertraulich aufbewahren. Keine Benutzer, Anfragen, ausgefüllten Selbstauskünfte, Zustelljobs, Statistik oder Zugangsdaten enthalten. Neue Administratoren und Integrationen am Ziel einrichten. Kontakte landen bis dahin im Adminbereich. Der Datenimport erfolgt nur einmal in einer frischen Instanz; erneuter Start überschreibt nichts.\n",
@@ -209,6 +262,22 @@ def import_project(path):
             )
         # Verify all bytes before touching destination database or filesystem.
         sources = []
+        design_sources = []
+        for identity, entries in seed.designs.items():
+            root = path.parent / "designs" / identity
+            for name, info in entries.items():
+                source = root.joinpath(*safe_path(name).parts)
+                if (
+                    not source.is_file()
+                    or source.is_symlink()
+                    or not source.resolve().is_relative_to(root.resolve())
+                    or source.stat().st_size != info["size"]
+                ):
+                    raise ValueError("Frontend-Datei fehlt oder hat eine falsche Größe")
+                raw = source.read_bytes()
+                if hashlib.sha256(raw).hexdigest() != info["sha256"]:
+                    raise ValueError("Frontend-Dateiprüfsumme stimmt nicht")
+                design_sources.append((identity, name, raw))
         for f in seed.files:
             source = path.parent / "files" / f.id
             if (
@@ -252,6 +321,15 @@ def import_project(path):
                 with os.fdopen(fd, "wb") as handle:
                     handle.write(raw)
                 db.add(File(**f.model_dump(exclude={"sha256"})))
+            for identity, name, raw in design_sources:
+                destination = DATA / "designs" / identity / name
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                fd = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                created.append(destination)
+                with os.fdopen(fd, "wb") as handle:
+                    handle.write(raw)
+            for identity, entries in seed.designs.items():
+                db.merge(Setting(key="design_" + identity, value=entries))
             for key, c in [("draft", seed.draft), ("published", seed.published)]:
                 db.merge(Setting(key=key, value=c.model_dump()))
             for m in seed.templates:

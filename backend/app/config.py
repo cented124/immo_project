@@ -228,6 +228,7 @@ class Config(BaseModel):
         if v and not (
             v == "/architecture.png"
             or re.fullmatch(r"/api/public/files/[a-f0-9]{32}", v)
+            or re.fullmatch(r"/api/public/frontend/[a-z][a-z0-9-]{1,40}/[A-Za-z0-9_/@+.-]+", v) and ".." not in v
         ):
             raise ValueError("Bitte eine Datei aus der Medienverwaltung auswählen")
         return v
