@@ -71,7 +71,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = 'windows-desktop-' + '${{ github.sha }}'.Substring(0,7)
-          gh release create $tag --repo '${{ github.repository }}' --title 'Raumwerk fuer Windows ohne Docker' --notes 'Auf echtem Windows-Runner mit PowerShell 5.1, Edge, Neustart, Sicherung und Offline-Umzug getestet. Das Paket enthaelt keine Konten oder Zugangsdaten.' (Join-Path $env:RW_TEST_ROOT 'dist\Raumwerk-Windows-ohne-Docker.zip') (Join-Path $env:RW_TEST_ROOT 'dist\Raumwerk-Windows-ohne-Docker.sha256.txt')
+          gh release create $tag --repo '${{ github.repository }}' --title 'Raumwerk fuer Windows: vollstaendiger Frontend-ZIP-Import' --notes 'Mit HTML/CSS/JavaScript-, Bild- und Schriftimport. Auf echtem Windows mit PowerShell 5.1, Edge, Objektanfrage, Export/Import, parallelen Verbindungen, Neustart, Sicherung und Offline-Umzug getestet. Windows-Paket und fertiges Westminster-Frontend sind getrennte ZIPs. Keine Konten oder Zugangsdaten enthalten.' (Join-Path $env:RW_TEST_ROOT 'dist\Raumwerk-Windows-ohne-Docker.zip') (Join-Path $env:RW_TEST_ROOT 'dist\Raumwerk-Windows-ohne-Docker.sha256.txt') (Join-Path $env:RW_TEST_ROOT 'downloads\Westminster-Frontend.zip') (Join-Path $env:RW_TEST_ROOT 'downloads\Westminster-Frontend.sha256.txt')
       - name: Safe test evidence
         if: always()
         uses: actions/upload-artifact@v4

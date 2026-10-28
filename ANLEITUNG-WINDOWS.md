@@ -39,7 +39,7 @@ Es gibt kein Standardpasswort. Die Einrichtungsseite wird nach der ersten erfolg
 
 - **Firma & Rechtliches:** Firmenname, Anschrift, Vertretung und zutreffende Registerdaten eintragen; Impressum und Datenschutz fachlich prüfen.
 - **Design & Medien / Seiten & Inhalte:** Bilder, Farben, Texte, Navigation und Abschnitte einstellen.
-- **Frontend-Studio:** KI-Prompt und Referenz exportieren, ein kompatibles Designpaket prüfen/importieren, Vorschau ansehen und veröffentlichen.
+- **Frontend-Studio:** Das KI-Referenzpaket exportieren und von der KI ein fertiges Frontend-ZIP mit Bildern und Schriften liefern lassen. ZIP auswählen, automatische Prüfung abwarten, als Entwurf übernehmen, Vorschau ansehen und veröffentlichen. [Einfache Importanleitung](docs/FRONTEND-IMPORT.md).
 - **Immobilien:** Objekt zunächst als Entwurf anlegen, echte Angaben und eigene Bilder ergänzen, prüfen und veröffentlichen.
 - **Dokumente / Module & Formulare:** Eigenes PDF hochladen, benötigte Module und Formularziele einstellen.
 - **Anfragen / Versionen:** Anfragen bearbeiten und gespeicherte Konfigurationen vergleichen oder als Entwurf wiederherstellen.

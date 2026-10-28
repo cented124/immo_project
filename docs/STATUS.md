@@ -18,6 +18,10 @@ Aktuelle echte Oberflächenbilder: [Screenshots](screenshots/README.md). Der fr�
 
 Die [vollständige Nutzersimulation](SIMULATION.md) ist erfolgreich abgeschlossen: eigene Musterfirma, Wohnung, selbst erstelltes Design, separates HTTPS-Docker-Deployment, unabhängige Interessentin, genau eine zusätzliche echte Telegram-Objektanfrage an B1 Gruppe und anschließende Adminbearbeitung. Der dabei gefundene Tab-Wechselfehler ist korrigiert; jetzt 16 bestandene Browserfälle. Ein konfiguriertes Demo-Projekt steht auf GitHub zum Download bereit.
 
+## Vollständige Frontend-ZIPs
+
+Version 3 importiert HTML, CSS, JavaScript, Bilder und lokale Schriften als gemeinsames Browserpaket. Das Studio prüft die ausgewählte Datei automatisch, zeigt Bildersetzungen und übernimmt zuerst nur einen Entwurf. Eigener Code läuft isoliert und verwendet eine begrenzte öffentliche API-Brücke. Projektexport und native Sicherung enthalten alle Paketdateien. Der KI-Prompt verlangt genau ein fertig gebautes ZIP; Baubeispiel und Buildhelfer sind enthalten. Das London-Frontend aus `raumwerk_test` steht als passendes Paket bereit. [Einfache Anleitung](FRONTEND-IMPORT.md) · [Vertrag und Grenzen](FRONTEND-PACKAGES.md). Nachweise: 46 Backend- und 18 Browserfälle plus tatsächlicher Westminster-Durchlauf auf Desktop/Mobil.
+
 ## Externe Voraussetzungen
 
 - Kundeneigenes PDF ist eingebunden: 4 Seiten, 27 leere AcroForm-Felder, kein PDF-JavaScript. Download bytegleich geprüft.

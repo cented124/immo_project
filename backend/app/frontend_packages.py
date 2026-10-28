@@ -87,8 +87,6 @@ class DesignPackage:
 def check_references(files):
     def check(source, value):
         parts = urlsplit(value)
-        if parts.scheme == "data":
-            return
         if parts.scheme or parts.netloc or value.startswith("/"):
             raise ValueError(
                 "Frontend-Ressourcen müssen relative lokale Pfade verwenden: "

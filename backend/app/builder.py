@@ -213,7 +213,7 @@ Eigene Server/SSR-Next-Funktionen sind kein Browserpaket und gehören nicht ins 
 Am einfachsten im mitgelieferten vollständigen Projekt reference/:
 1. npm --prefix frontend ci
 2. frontend/components/Website.tsx und öffentliche CSS/Bilder gestalten.
-3. node scripts/build-frontend-package.cjs --id mein-design-eindeutig --name "Mein Frontend"
+3. node scripts/build-frontend-package.cjs --manifest ../manifest.json --id mein-design-eindeutig --name "Mein Frontend"
 4. Das erzeugte downloads/Raumwerk-Frontend.zip testen und genau dieses ZIP liefern.
 Das Buildwerkzeug bündelt React und die bewährten Formulare mit esbuild, übernimmt
 Bilder und lokale Schriften. frontend/portable/example.zip ist ein bereits fertiges,

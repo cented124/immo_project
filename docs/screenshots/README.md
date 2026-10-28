@@ -10,3 +10,9 @@ Zusätzlich auf einem echten Windows-/Edge-Runner im [bestandenen nativen Testla
 
 - [Einmalige lokale Einrichtung ohne Docker](windows-setup.png)
 - [Native Adminsicht mit synthetischer Immobilienanfrage](windows-admin.png)
+
+
+Vollständig importiertes Westminster-/London-Frontend aus `raumwerk_test`, mit erhaltenen synthetischen Baukasten-Firmendaten (kein fest eingebauter Firmenname). Aufgenommen im bestandenen ZIP-/Kontakt-/PDF-Browserdurchlauf:
+
+- [London-Frontend am Desktop](frontend-import-london-desktop.png)
+- [London-Frontend auf dem Mobilgerät](frontend-import-london-mobile.png)

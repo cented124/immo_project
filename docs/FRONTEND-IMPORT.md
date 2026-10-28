@@ -31,7 +31,7 @@ Mit **Beispiel-ZIP zum Importieren** kannst du den Ablauf ohne eine weitere KI a
 
 ## Was ein vollständiges ZIP unterstützt
 
-Fertiges HTML, CSS, JavaScript, Bilder (PNG/JPG/WebP/GIF/ICO), WOFF/WOFF2-Schriften und eine `manifest.json` Version 3. Bis 10 MB als ZIP, 32 MB entpackt und 400 Dateien. Bildzuordnungen für Titelbild, Beratungsbild, Logo und Browser-Icon sind optional und werden vor dem Import angezeigt.
+Fertiges HTML, CSS, JavaScript, Bilder (PNG/JPG/WebP/GIF/ICO/SVG), WOFF/WOFF2-Schriften und eine `manifest.json` Version 3. Bis 10 MB als ZIP, 32 MB entpackt und 400 Dateien. Bildzuordnungen für Titelbild, Beratungsbild, Logo und Browser-Icon sind optional und werden vor dem Import angezeigt.
 
 Eine eigene React-/Vite-Oberfläche kann vor der Lieferung in Browserdateien gebaut werden. Ein Next.js-Quellprojekt mit Serverfunktionen, eine Backendanwendung oder ein Ordner mit `node_modules` ist kein fertiges Browserpaket. Die mitgelieferte KI-Bauanleitung macht diesen Unterschied konkret; der importierende Benutzer muss weder npm noch Python bedienen.
 

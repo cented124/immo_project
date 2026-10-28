@@ -8,7 +8,7 @@ Im vollständigen KI-Referenzprojekt:
 
 ```sh
 npm --prefix frontend ci
-node scripts/build-frontend-package.cjs --id eigenes-design-eindeutig --name "Eigenes Frontend"
+node scripts/build-frontend-package.cjs --manifest ../manifest.json --id eigenes-design-eindeutig --name "Eigenes Frontend"
 ```
 
 Ergebnis: `downloads/Raumwerk-Frontend.zip`. Der Builder bündelt die öffentliche React-Oberfläche und lokale Fonts mit esbuild, ersetzt NextLink durch normale Browserlinks und übernimmt die öffentlichen Bilder und statischen Dateien. Eigene weitere Medien als relative Build-Assets importieren, damit esbuild sie mitnimmt. Der Endnutzer erhält nur dieses ZIP. `frontend/portable/example.zip` ist ein fertiges Beispiel. HTML/CSS/JavaScript können auch unabhängig gebaut werden; keine serverseitigen Next-Funktionen im Browserbuild verwenden.

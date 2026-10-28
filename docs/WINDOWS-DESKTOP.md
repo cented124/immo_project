@@ -27,3 +27,10 @@ Prüfungen umfassen Backendtests für Proxy-/Setupgrenzen und Sperren, einen nat
 Der Workflow **Windows without Docker** führt zusätzlich PowerShell 5.1, das echte eingebettete Windows-Python, Node für Windows und Edge auf `windows-latest` aus. Nach erfolgreichem Test wird das Daten-freie Laufzeitpaket gebaut und in einem anderen Pfad mit Leerzeichen und Umlauten erneut offline gestartet. Eine Veröffentlichung erfolgt auf `main` erst nach diesen Schritten. Laufstatus und Nachweise stehen im GitHub-Actions-Lauf.
 
 Ein Windows-Runner ist ein echter Windows-Test, aber keine Prüfung jedes Windows-10/11-PCs, jeder Firmenrichtlinie, Antiviruskonfiguration, ARM-Installation oder Netzumgebung. Unterstützung dieses Pakets: Windows x64. Kein Anspruch auf 100 Prozent Fehlerfreiheit.
+
+
+## Vollständige Frontends
+
+Der native Test bedient jetzt auch den Version-3-ZIP-Import im Studio, lädt die private Vorschau, veröffentlicht, stellt als getrennte Person eine Objektanfrage aus der importierten Oberfläche, exportiert/importiert das Projekt erneut und prüft Paketbestand nach Sicherung und Neustart. [Bestandener Windows-/Offline-Lauf](https://github.com/cented124/immo_project/actions/runs/40770385111).
+
+Der Loopback-Gateway akzeptiert für freigegebene Ressourcen-GETs den opaque Browser-Origin null, damit isolierte Scripts/Styles/Fonts laden. Admin, Einrichtung, Kontrollzugriff und schreibende Anfragen erhalten diese Ausnahme nicht. Eine TCP-Warteschlange mit 128 Plätzen verhindert unter Windows Verbindungsablehnungen bei gleichzeitigem Admin-Prefetch und parallelen APIzugriffen. Der Test fordert nach Neustart zwölf Verbindungen gleichzeitig an. Bereitstellung und autorisierter Stopp werden ohne Anfrageinhalte protokolliert.

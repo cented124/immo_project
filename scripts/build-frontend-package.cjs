@@ -122,8 +122,9 @@ const build = fs.mkdtempSync(path.join(os.tmpdir(), "raumwerk-browser-"));
         ? {
             hero_image: "public/architecture.png",
             approach_image: "public/architecture.png",
+            ...(theme.assets || {}),
           }
-        : {},
+        : { ...(theme.assets || {}) },
     };
     fs.writeFileSync(
       path.join(build, "manifest.json"),

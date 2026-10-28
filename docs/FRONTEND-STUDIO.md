@@ -10,7 +10,7 @@ Für Endnutzer: [Einfacher ZIP-Import](FRONTEND-IMPORT.md). Für Entwickler und 
 4. Endnutzer wählt dieses ZIP im Studio. Die automatische Prüfung zeigt Namen, Dateianzahl, Bilder und Bildersetzungen. Als Entwurf übernehmen und Vorschau ansehen.
 5. Veröffentlichung erfolgt bewusst nach Abnahme. Versionen können frühere Konfigurationen als Entwurf zurückholen.
 
-Ein bereits fertiges Beispiel liegt unter `frontend/portable/example.zip` und ist im Studio separat downloadbar. Der Buildhelfer `node scripts/build-frontend-package.cjs --id eindeutige-id --name "Mein Design"` bündelt öffentliche React-Komponenten, CSS, Bilder und Schriften. Keine manuellen Einbauschritte beim Endnutzer. Ältere Version-1/2-Manifeste bleiben reine Adapter-/Themeimporte; Quellen darin werden nicht installiert.
+Ein bereits fertiges Beispiel liegt unter `frontend/portable/example.zip` und ist im Studio separat downloadbar. Der Buildhelfer `node scripts/build-frontend-package.cjs --manifest ../manifest.json --id eindeutige-id --name "Mein Design"` bündelt öffentliche React-Komponenten, CSS, Bilder und Schriften. Keine manuellen Einbauschritte beim Endnutzer. Ältere Version-1/2-Manifeste bleiben reine Adapter-/Themeimporte; Quellen darin werden nicht installiert.
 
 ## Checkliste für die KI
 
