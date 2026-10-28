@@ -445,7 +445,11 @@ def serve(web_dir, no_delivery=False):
                 db.commit()
 
         stop = threading.Event()
-        signal.signal(signal.SIGTERM, lambda *_: stop.set())
+        def signal_stop(*_):
+            print(time.strftime("%H:%M:%S") + " Stop durch SIGTERM", flush=True)
+            stop.set()
+
+        signal.signal(signal.SIGTERM, signal_stop)
         try:
             gateway = Gateway(
                 3000,
@@ -553,14 +557,14 @@ def serve(web_dir, no_delivery=False):
                     "web_dir": str(web_dir),
                 },
             )
-            print("Lokaler Dienst bereit: " + gateway.url, flush=True)
+            print(time.strftime("%H:%M:%S") + " Lokaler Dienst bereit: " + gateway.url, flush=True)
             while not stop.wait(0.5):
                 if child.process.poll() is not None or not api_thread.is_alive():
                     raise RuntimeError(
                         "Ein Programmteil wurde beendet. Bitte STARTEN.cmd erneut oeffnen."
                     )
         finally:
-            print("Lokaler Dienst wird beendet; angefordert=" + str(stop.is_set()), flush=True)
+            print(time.strftime("%H:%M:%S") + " Lokaler Dienst wird beendet; angefordert=" + str(stop.is_set()), flush=True)
             gateway.ready = False
             if "proxy_thread" in locals():
                 gateway.shutdown()
@@ -600,7 +604,7 @@ def launch(no_browser=False, no_delivery=False):
             ]
             if no_delivery:
                 args.append("--no-delivery")
-            output = open(LOGS / "desktop.log", "wb")
+            output = open(LOGS / "desktop.log", "ab")
             flags = (
                 subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
                 if os.name == "nt"

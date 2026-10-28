@@ -259,6 +259,7 @@ class Handler(BaseHTTPRequestHandler):
             )
             self.reply(200, {"url": self.server.url + target})
         elif self.command == "POST" and route == "/__desktop/stop":
+            print("Autorisierter lokaler Stopp empfangen", flush=True)
             self.reply(200, {"ok": True})
             self.server.stop_event.set()
         else:

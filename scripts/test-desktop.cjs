@@ -23,6 +23,7 @@ const { chromium, expect } = require(
 const password = "Native-test-" + crypto.randomBytes(16).toString("hex");
 let browser, guard;
 function command(action) {
+  console.log("Native action: " + action);
   const result = cp.spawnSync(
     python,
     [
