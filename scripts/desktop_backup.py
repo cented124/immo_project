@@ -11,6 +11,7 @@ import sqlite3
 import stat
 import zipfile
 from datetime import datetime, timezone
+from contextlib import closing
 
 MAX_BYTES = 2 * 1024**3
 MAX_FILES = 20000
@@ -44,7 +45,7 @@ def validate_database(data):
         raise RuntimeError("Die Sicherung enthaelt keine lokale Datenbank.")
     from cryptography.fernet import Fernet
     try:
-        with sqlite3.connect(database.as_uri() + "?mode=ro", uri=True) as db:
+        with closing(sqlite3.connect(database.as_uri() + "?mode=ro", uri=True)) as db:
             if db.execute("PRAGMA quick_check").fetchall() != [("ok",)]:
                 raise ValueError("integrity")
             # Reject unknown future schemas; older known schemas can migrate on start.
@@ -154,7 +155,7 @@ def stage_backup(archive_path, stage):
 
 def prepare_restored_database(data):
     # Restoring must not revive old sessions or automatically resend jobs from a snapshot.
-    with sqlite3.connect(data / "app.db") as db:
+    with closing(sqlite3.connect(data / "app.db")) as db:
         db.execute("DELETE FROM sessions")
         if db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='deliveries'").fetchone():
             db.execute("UPDATE deliveries SET status='failed', error='Nach Wiederherstellung pausiert. Zustellung vor manueller Wiederaufnahme pruefen.' WHERE status IN ('pending','retry')")

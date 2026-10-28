@@ -43,3 +43,7 @@ jobs:
           sha256sum -c Raumwerk-Windows.sha256.txt
           if [ -f Kuestenklar-Demo.sha256.txt ]; then sha256sum -c Kuestenklar-Demo.sha256.txt; fi
           if [ -f Westminster-Frontend.sha256.txt ]; then sha256sum -c Westminster-Frontend.sha256.txt; fi
+      - name: Fixed release source integrity
+        if: ${{ hashFiles('fertige-version/1.0.0/SHA256SUMS.txt') != '' }}
+        working-directory: fertige-version/1.0.0
+        run: sha256sum -c SHA256SUMS.txt

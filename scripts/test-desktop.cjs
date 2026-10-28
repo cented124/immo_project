@@ -20,7 +20,7 @@ const ready = fs
 const { chromium, expect } = require(
   path.join(runtime, ready.at(-1), "node_modules", "@playwright", "test"),
 );
-const password = "Native-test-" + crypto.randomBytes(16).toString("hex");
+let password = "Native-test-" + crypto.randomBytes(16).toString("hex");
 let browser, guard;
 function command(action, extra = []) {
   console.log("Native action: " + action);
@@ -412,6 +412,15 @@ async function checkExport(context, url, headers) {
           level: 1,
         }),
     ).toBeVisible();
+    const recoveredPassword = "Recovered-" + crypto.randomBytes(16).toString("hex");
+    const recovery = cp.spawnSync(python, ["-X", "utf8", "-c",
+      "import builtins,getpass,json,runpy,sys; p=json.load(sys.stdin); values=iter([p['password'],p['password']]); builtins.input=lambda *_: 'desktop@example.com'; getpass.getpass=lambda *_: next(values); sys.argv=[p['controller'],'recover']; runpy.run_path(p['controller'],run_name='__main__')"],
+      { cwd: root, input: JSON.stringify({ controller: path.join(root, "scripts/desktop.py"), password: recoveredPassword }), encoding: "utf8", timeout: 120000, windowsHide: true });
+    if (recovery.status !== 0) throw new Error("local administrator recovery failed");
+    password = recoveredPassword;
+    command("launch");
+    if ((await context.request.get(state().url + "/api/admin/me")).status() !== 401) throw new Error("recovery did not revoke the previous session");
+    await login(page, state().url);
     command("stop");
     fs.writeFileSync(
       path.join(root, ".runtime/test-evidence/result.json"),
@@ -430,6 +439,7 @@ async function checkExport(context, url, headers) {
           backup: true,
           verified_restore_recovers_deleted_inquiry_and_custom_frontend: true,
           restore_revokes_sessions: true,
+          administrator_recovery: true,
           no_external_delivery: true,
         },
         null,

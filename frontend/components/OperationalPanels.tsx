@@ -216,8 +216,8 @@ export function TemplateLibrary({
       <div className="card-header">
         <h2>Template-Bibliothek & Import</h2>
         <p>
-          Ein JSON-Manifest verbindet ein Design mit einem registrierten
-          Funktionsadapter. Es lädt keinen fremden Programmcode.
+          Gespeicherte Frontends auswählen. Vollständige ZIP-Pakete mit Bildern
+          importieren Sie im Frontend-Studio; ältere Theme-Manifeste finden Sie unter Erweitert.
         </p>
       </div>
       <label>
