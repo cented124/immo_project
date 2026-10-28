@@ -101,6 +101,9 @@ def read_body(handler, maximum=MAX_BODY):
 class Gateway(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = False
+    # Browsers prefetch admin routes and load fonts in parallel. Windows refuses
+    # additional connections when Python's default listen backlog of five fills.
+    request_queue_size = 128
 
     def __init__(
         self, port, *, instance, control, setup, create_admin, has_admin, stop

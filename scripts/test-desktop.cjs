@@ -295,6 +295,10 @@ async function checkExport(context, url, headers) {
     const second = state();
     if (second.pid === first.pid) throw new Error("supervisor did not restart");
     await login(page, second.url);
+    await Promise.all(Array.from({ length: 12 }, async () => {
+      const response = await context.request.get(second.url + "/__desktop/health");
+      if (!response.ok()) throw new Error("parallel native health request failed");
+    }));
     let config;
     try {
       config = await (await context.request.get(second.url + "/api/admin/integrations/telegram")).json();
