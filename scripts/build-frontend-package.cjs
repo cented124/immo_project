@@ -71,17 +71,6 @@ const build = fs.mkdtempSync(path.join(os.tmpdir(), "raumwerk-browser-"));
           },
         },
       ],
-      plugins: [
-        {
-          name: "local-public-image",
-          setup(build) {
-            build.onResolve({ filter: /^\/architecture\.png$/ }, () => ({
-              path: "./assets/architecture.png",
-              external: true,
-            }));
-          },
-        },
-      ],
       loader: {
         ".woff2": "file",
         ".woff": "file",

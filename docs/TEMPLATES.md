@@ -1,4 +1,4 @@
-# Schnittstelle für Frontends
+# Template-Schnittstelle für vollständige Frontends
 
 Raumwerk bleibt firmenneutral. Die Firmenidentität und alle Betriebsdaten kommen aus Config und den öffentlichen APIs. Ein Designwechsel erhält Immobilien, Anfragen, Rollen, Integrationen und URLs.
 
