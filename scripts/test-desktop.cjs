@@ -37,6 +37,7 @@ function command(action) {
   );
   if (result.status !== 0)
     throw new Error(action + " failed: " + (result.stderr || result.stdout));
+  if (action === "launch") console.log("Native launch: " + result.stdout.trim());
 }
 function state() {
   return JSON.parse(
@@ -293,9 +294,19 @@ async function checkExport(context, url, headers) {
     const second = state();
     if (second.pid === first.pid) throw new Error("supervisor did not restart");
     await login(page, second.url);
-    const config = await (
-      await context.request.get(second.url + "/api/admin/integrations/telegram")
-    ).json();
+    let config;
+    try {
+      config = await (await context.request.get(second.url + "/api/admin/integrations/telegram")).json();
+    } catch (error) {
+      const current = state();
+      const health = await new Promise(resolve => {
+        const request = http.get(current.url + "/__desktop/health", response => { let value = ""; response.on("data", chunk => value += chunk); response.on("end", () => resolve({ status: response.statusCode, value })); });
+        request.on("error", reason => resolve({ error: reason.message }));
+        request.setTimeout(3000, () => request.destroy());
+      });
+      console.error("Restart diagnostic: " + JSON.stringify({ requested: second.url, current: current.url, browser: new URL(page.url()).origin, pid: current.pid, health }));
+      throw error;
+    }
     if (!config.secret_configured || config.token)
       throw new Error("encryption key was lost or secret exposed");
     if (
@@ -416,6 +427,6 @@ async function checkExport(context, url, headers) {
     } catch {}
   }
 })().catch((error) => {
-  console.error(error.message);
+  console.error(error.message.replace(/(cookie|authorization):[^\r\n]+/gi, "$1: [REDACTED]"));
   process.exit(1);
 });

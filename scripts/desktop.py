@@ -553,12 +553,14 @@ def serve(web_dir, no_delivery=False):
                     "web_dir": str(web_dir),
                 },
             )
+            print("Lokaler Dienst bereit: " + gateway.url, flush=True)
             while not stop.wait(0.5):
                 if child.process.poll() is not None or not api_thread.is_alive():
                     raise RuntimeError(
                         "Ein Programmteil wurde beendet. Bitte STARTEN.cmd erneut oeffnen."
                     )
         finally:
+            print("Lokaler Dienst wird beendet; angefordert=" + str(stop.is_set()), flush=True)
             gateway.ready = False
             if "proxy_thread" in locals():
                 gateway.shutdown()
