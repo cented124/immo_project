@@ -124,6 +124,7 @@ try {
   if ($architecture -ne 'AMD64') { throw 'Dieses Paket ist fuer Windows x64. Eine ARM-Version ist nicht enthalten.' }
   [System.IO.Directory]::CreateDirectory($runtime) | Out-Null
   foreach ($folder in @((Join-Path $root 'DATEN'),(Join-Path $runtime 'control'),(Join-Path $runtime 'logs'))) { Protect-LocalFolder $folder }
+  if ($Action -eq 'backup') { Protect-LocalFolder (Join-Path $root 'SICHERUNGEN') }
   if ($Action -in @('stop','diagnose','backup')) {
     if (-not (Test-Path -LiteralPath $python)) {
       if ($Action -eq 'stop') { Write-Host 'Noch keine lokale Installation gestartet.'; exit 0 }

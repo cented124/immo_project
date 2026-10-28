@@ -235,6 +235,24 @@ async function login(page, url) {
       { data: { email: "second@example.com", password, repeat: password } },
     );
     if (rejected.status() !== 409) throw new Error("setup stayed open");
+    const exported = await context.request.post(
+      first.url + "/api/admin/builder/project",
+      { headers, data: { domain: "" } },
+    );
+    if (!exported.ok()) throw new Error("native project export failed");
+    const exportPath = path.join(runtime, "test-export.zip");
+    fs.writeFileSync(exportPath, await exported.body());
+    try {
+      const checked = cp.spawnSync(
+        python,
+        ["-X", "utf8", path.join(root, "scripts/check-desktop-export.py"), exportPath],
+        { cwd: root, encoding: "utf8", timeout: 120000, windowsHide: true },
+      );
+      if (checked.status !== 0)
+        throw new Error("native export/import failed: " + checked.stderr);
+    } finally {
+      fs.rmSync(exportPath, { force: true });
+    }
     fs.mkdirSync(path.join(root, ".runtime", "test-evidence"), {
       recursive: true,
     });
@@ -284,6 +302,7 @@ async function login(page, url) {
           duplicate_start: true,
           occupied_port_preserved: guarded,
           inquiry: true,
+          project_export_and_import: true,
           restart: true,
           encrypted_key_preserved: true,
           backup: true,
@@ -294,7 +313,7 @@ async function login(page, url) {
       ),
     );
     console.log(
-      "Native smoke passed: setup, login, port conflict, upload, listing, inquiry, restart, encrypted settings and backup. No messages sent.",
+      "Native smoke passed: setup, login, port conflict, upload, listing, inquiry, project export/import, restart, encrypted settings and backup. No messages sent.",
     );
   } finally {
     if (browser) await browser.close();

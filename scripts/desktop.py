@@ -676,18 +676,20 @@ def stop():
 
 
 def backup():
-    stop()
-    if not (DATA / "app.db").is_file():
-        raise RuntimeError("Noch keine lokale Datenbank vorhanden.")
-    folder = ROOT / "SICHERUNGEN"
-    folder.mkdir(exist_ok=True)
-    target = folder / (
-        time.strftime("Raumwerk-%Y%m%d-%H%M%S-") + secrets.token_hex(3) + ".zip"
-    )
-    with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
-        for path in DATA.rglob("*"):
-            if path.is_file() and not path.is_symlink():
-                archive.write(path, "DATEN/" + path.relative_to(DATA).as_posix())
+    # A second STARTEN must not reopen the database while its files are copied.
+    with FileLock(CONTROL / "install.lock"):
+        stop()
+        if not (DATA / "app.db").is_file():
+            raise RuntimeError("Noch keine lokale Datenbank vorhanden.")
+        folder = ROOT / "SICHERUNGEN"
+        folder.mkdir(mode=0o700, exist_ok=True)
+        target = folder / (
+            time.strftime("Raumwerk-%Y%m%d-%H%M%S-") + secrets.token_hex(3) + ".zip"
+        )
+        with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
+            for path in DATA.rglob("*"):
+                if path.is_file() and not path.is_symlink():
+                    archive.write(path, "DATEN/" + path.relative_to(DATA).as_posix())
     print("Sicherung erstellt: " + str(target))
     print(
         "Enthaelt private Daten und den Schluessel. Nicht in GitHub oder im Chat veroeffentlichen."

@@ -22,7 +22,7 @@ Die Proxygrenze begrenzt auch Chunked-Uploads, weist mehrdeutige Längenangaben 
 
 ## Nachweise und Grenzen
 
-Prüfungen umfassen Backendtests für Proxy-/Setupgrenzen und Sperren, einen nativen Produktionsdurchlauf mit Browser, Ersteinrichtung, mehrfachen Start, belegtem Port, Datei-Upload, Inserat, Objektanfrage, Neustart, erhaltenem Integrationsschlüssel und Sicherung. SMTP und Telegram werden dabei nicht live angesprochen.
+Prüfungen umfassen Backendtests für Proxy-/Setupgrenzen und Sperren, einen nativen Produktionsdurchlauf mit Browser, Ersteinrichtung, mehrfachen Start, belegtem Port, Datei-Upload, Inserat, Objektanfrage, Projektexport mit Import in eine leere native Datenbank, Neustart, erhaltenem Integrationsschlüssel und Sicherung. Der Export wird auch auf vorhandene Windows-Starter und fehlende Konten/Anfragen/Geheimnisse geprüft. SMTP und Telegram werden dabei nicht live angesprochen.
 
 Der Workflow **Windows without Docker** führt zusätzlich PowerShell 5.1, das echte eingebettete Windows-Python, Node für Windows und Edge auf `windows-latest` aus. Nach erfolgreichem Test wird das Daten-freie Laufzeitpaket gebaut und in einem anderen Pfad mit Leerzeichen und Umlauten erneut offline gestartet. Eine Veröffentlichung erfolgt auf `main` erst nach diesen Schritten. Laufstatus und Nachweise stehen im GitHub-Actions-Lauf.
 

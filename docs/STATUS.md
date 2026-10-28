@@ -1,6 +1,6 @@
 # Fortsetzbarer Umsetzungsstand
 
-Stand: 27.10.2026. Produktname des firmenneutralen Werkzeugs: **Raumwerk**. Musteridentität der öffentlichen Website: austauschbares „RAUM & WERT“. Kein Aurevia-spezifischer Datenbank-/Backendcode.
+Stand: 28.10.2026. Produktname des firmenneutralen Werkzeugs: **Raumwerk**. Musteridentität der öffentlichen Website: austauschbares „RAUM & WERT“. Kein Aurevia-spezifischer Datenbank-/Backendcode.
 
 ## Umgesetzt
 
@@ -12,6 +12,7 @@ Stand: 27.10.2026. Produktname des firmenneutralen Werkzeugs: **Raumwerk**. Must
 6. Analytics/Betrieb: tatsächliche Ereignisse, Dashboard, Änderungsprotokoll, Docker Compose, Konfigurationserzeugung, Installations-/Betriebs-/Template-/Backup-Dokumentation.
 7. Freigegebener GUI-Entwurf umgesetzt: Firma & Rechtliches, Frontend-Studio, KI-Prompt und komplettes Referenzprojekt, versionierter sicherer Designimport mit tatsächlich angewendeten Layoutwerten, Kontrast-/Medienprüfung, manuelle Layoutregler, Konfigurationsvergleich und Wiederherstellung.
 8. Vollständiger Projektexport mit veröffentlichtem Stand und Entwurf, allen Immobilien und zugeordneten Medien, einmaliger verifizierter Datenübernahme in frische Instanzen, VPS-/DNS-Assistent, Caddy/HTTPS, Live-Startprogramm und lesender HTTPS-Prüfhelfer. Kein Export echter Anfragen, ausgefüllter PDFs, Benutzer oder Geheimnisse.
+9. Nativer Windows-x64-Start ohne Docker/WSL: portable geprüfte Python-/Node-Laufzeiten, SQLite, Ersteinrichtung im Browser, freier lokaler Port, Start/Stopp/Diagnose/Reparatur/Sicherung. Fertiges Laufzeit-ZIP und kleines selbst einrichtendes Quellpaket; [Anleitung](../ANLEITUNG-WINDOWS.md), [Architektur und Testgrenzen](WINDOWS-DESKTOP.md). Ein echter Windows-/Edge-Durchlauf und 37 Backendtests sind bestanden. Eigene Desktop-Daten werden getrennt von bestehenden Docker-Daten gespeichert.
 
 Aktuelle echte Oberflächenbilder: [Screenshots](screenshots/README.md). Der frühere Zielentwurf bleibt unter `entwuerfe/` dokumentiert. Freier React-Code wird über den Quellcode-/Buildweg angepasst; direktes GUI-Importformat bleibt ein geprüftes Datenpaket, keine beliebige Codeausführung.
 

@@ -1,10 +1,10 @@
 # Nachweis der lokalen Abnahme
 
-Stand: 27.10.2026. Alle Daten in automatisierten Tests sind ausdrücklich synthetisch. Keine Beispielimmobilie wurde im eigentlichen Entwicklungsdatenbestand veröffentlicht.
+Stand: 28.10.2026. Alle Daten in automatisierten Tests sind ausdrücklich synthetisch. Keine Beispielimmobilie wurde im eigentlichen Entwicklungsdatenbestand veröffentlicht.
 
 | Prüfung | Ergebnis |
 | --- | --- |
-| Python-Integrationstests mit temporärem SQLite | **31 bestanden** |
+| Python-Integrationstests mit temporärem SQLite | **37 bestanden** (einschließlich 6 Desktop-Grenzprüfungen) |
 | Dieselbe Suite mit echtem PostgreSQL 17 (Docker) | **31 bestanden** |
 | Playwright / Chromium – Desktop und mobile Ansicht | **16 bestanden** |
 | TypeScript `tsc --noEmit` | bestanden |
@@ -94,3 +94,15 @@ GitHub Actions ist für Backendtests, Produktionsbuild, Desktop-/Mobiltests, Com
 Am 27.10.2026 wurde der Ablauf mit zwei getrennten Browsersitzungen und der fiktiven Küstenklar Immobilien GmbH vollständig über die Oberfläche durchgespielt: Firmendaten, Seiten, PDF, Immobilienassistent, Prompt/Referenz, eigenes Designpaket, Prüfung/Import/Veröffentlichung und Projektexport. Das Exportprojekt wurde als separate Docker-Installation mit PostgreSQL, Admin und lokalem HTTPS gestartet. Eine zweite Person suchte die Wohnung und stellte eine Objektanfrage; genau eine echte Telegram-Nachricht wurde von der offiziellen API für B1 Gruppe angenommen, Outbox `sent` nach einem Versuch. Anschließend erfolgten Adminprüfung, Notiz, Statusänderung und CSV-Export. Keine E-Mail wurde verschickt. [Bebilderter Nachweis und Demo-Download](SIMULATION.md).
 
 Dabei wurde ein Fehler beim schnellen Wechsel der Integrationstabs gefunden und behoben. Zwei zusätzliche Browserfälle mit bewusst verspäteter Antwort (Desktop/Mobil) sichern ihn ab. Die vollständige Suite mit nun 16 Fällen besteht; der korrigierte Produktionsbuild wurde ebenfalls in der tatsächlichen Simulation verwendet.
+
+## Windows ohne Docker, 28.10.2026
+
+Der echte [Windows-/Edge-Lauf 40606056994](https://github.com/cented124/immo_project/actions/runs/40606056994) ist erfolgreich. Er verwendet Windows PowerShell 5.1, eingebettetes CPython 3.13.17 x64 und Node 24.19.0 für Windows. Der Arbeitsordner enthält Leerzeichen, Umlaut und Apostroph. Browser-Ersteinrichtung, Login, Mehrfachstart, belegter Port, Bild-Upload, veröffentlichte Immobilie, anonyme Objektanfrage, Adminsicht, Neustart, erhaltener Verschlüsselungsschlüssel und ZIP-Sicherung sind bestanden. Es wurden keine externen Nachrichten gesendet.
+
+Das anschließend gebaute Laufzeitpaket wurde in einen anderen Ordner entpackt. Der ursprüngliche Buildordner wurde umbenannt, damit alte absolute Pfade tatsächlich ungültig sind. Mit auf einen nicht erreichbaren Proxy gesetztem externen HTTP(S)-Zugriff bestand derselbe vollständige Browserdurchlauf erneut. Python, Node, Backend-Pakete und Frontend mussten dabei nicht erneut heruntergeladen werden. [Screenshots der Windows-Einrichtung und Adminsicht](screenshots/README.md).
+
+Der entsprechende [Linux-GitHub-Lauf 40606056954](https://github.com/cented124/immo_project/actions/runs/40606056954) bestand ebenfalls: 37 Backendfälle, Produktionsbuild, 16 Desktop-/Mobilbrowserfälle, Compose-Konfiguration und Download-Prüfsummen. Die sechs zusätzlichen Desktopfälle prüfen begrenzte Chunked-Anfragen, Setup-/Origin-/Host-Schutz, Steuerungszugriff, Cookie-/Downloadweitergabe, Prozesssperren und die Ablehnung externer Steuerungsadressen.
+
+Im abschließenden lokalen nativen Browserdurchlauf wurde außerdem ein vollständiges Projekt-ZIP über die laufende Anwendung exportiert und nach echten Migrationen in eine leere separate SQLite-Datenbank übernommen: Firma, Immobilie und Bild vorhanden, keine Benutzer/Anfragen/Zustelljobs/Integrationsgeheimnisse, zweiter Import ohne Überschreiben. Derselbe Export-/Importnachweis ist im Windows-Workflow eingebaut. Eine gemeinsame Startsperre verhindert das Wiederöffnen der Datenbank während der Desktop-Sicherung.
+
+Der [Windows-Workflow](https://github.com/cented124/immo_project/actions/workflows/windows.yml) veröffentlicht auf `main` das fertige ZIP erst nach erfolgreichem Browser-, Export-/Import- und Offline-Umzugstest. Windows-Runner sind keine Prüfung jeder Windows-10/11-Hardware, ARM-Plattform oder Firmenrichtlinie. Die Desktop-Installation ist lokal gebunden; ein öffentlicher Domain-/VPS-Livegang wird daraus nicht abgeleitet. Architektur und Grenzen: [WINDOWS-DESKTOP.md](WINDOWS-DESKTOP.md).
