@@ -20,9 +20,13 @@ Eine selbst hostbare Anwendung für **ein beliebiges Unternehmen und eine Websit
 
 Ein vollständiger Durchlauf mit Musterfirma, Wohnung, eigenem Frontend, Docker-Deployment, echter Telegram-Zustellung und Adminbearbeitung ist unter [Simulation mit Screenshots und Demo-Download](docs/SIMULATION.md) dokumentiert.
 
-Lade das **[Windows-Testpaket direkt von GitHub herunter](https://github.com/cented124/immo_project/raw/refs/heads/main/downloads/Raumwerk-Windows.zip)**, entpacke es und folge [ANLEITUNG-WINDOWS.md](ANLEITUNG-WINDOWS.md). Falls GitHub eine Anmeldung verlangt, melde dich mit dem Konto an, das Zugriff auf dieses Repository hat.
+**Ohne Docker:** Lade das **[fertige Windows-Paket mit Laufzeiten](https://github.com/cented124/immo_project/releases/latest/download/Raumwerk-Windows-ohne-Docker.zip)** herunter, entpacke es und öffne `STARTEN.cmd`. Python, Node.js und das gebaute Frontend sind enthalten; die erste Administratoranlage erfolgt im Browser. Für Windows 10/11 x64. Falls GitHub eine Anmeldung verlangt, das Konto mit Repositoryzugriff verwenden.
 
-Alternativ auf dieser Repository-Seite **Code → Download ZIP** auswählen. Öffne nach dem Entpacken den Ordner, in dem `STARTEN.cmd` liegt. Nach Installation von Docker Desktop genügt `STARTEN.cmd`; `STOPPEN.cmd` erhält deine Daten. Beide Downloads enthalten vollständigen Quellcode und die leere PDF-Vorlage, aber keine Zugangsdaten oder Kundendatenbanken.
+Alternativ richtet das **[kleine Windows-Quellpaket](https://github.com/cented124/immo_project/raw/refs/heads/main/downloads/Raumwerk-Windows.zip)** die festgelegten Laufzeiten beim ersten Start automatisch über das Internet ein. Es installiert nichts systemweit. Details: [einfache Windows-Anleitung](ANLEITUNG-WINDOWS.md).
+
+Lokale Daten liegen unter `DATEN`, Programme getrennt unter `.runtime`. `STOPPEN.cmd`, `SICHERN.cmd`, `DIAGNOSE.cmd` und `REPARIEREN.cmd` unterstützen den Betrieb. Docker-/WSL-Dienste und eine separate Datenbank werden für diesen lokalen Startweg nicht benötigt. Der VPS-Start bleibt unabhängig davon verfügbar.
+
+Alternativ auf dieser Repository-Seite **Code → Download ZIP** auswählen. Öffne nach dem Entpacken den Ordner, in dem `STARTEN.cmd` liegt. `STARTEN.cmd` richtet die lokale Anwendung ohne Docker ein; `STOPPEN.cmd` erhält deine Daten. Die Downloads enthalten vollständigen Quellcode und die leere PDF-Vorlage, aber keine Zugangsdaten oder Kundendatenbanken.
 
 ## Schnellstart: lokal
 

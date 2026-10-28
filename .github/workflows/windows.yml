@@ -42,14 +42,24 @@ jobs:
           $target = Join-Path $env:RUNNER_TEMP "Raumwerk Offline ü"
           Expand-Archive -LiteralPath (Join-Path $env:RW_TEST_ROOT 'dist\Raumwerk-Windows-ohne-Docker.zip') -DestinationPath $target
           $project = Join-Path $target 'Raumwerk'
+          # Make the original absolute build paths unavailable, rather than merely
+          # copying while the old installation remains readable.
+          $original = $env:RW_TEST_ROOT
+          $archived = $original + '-archived'
+          Move-Item -LiteralPath $original -Destination $archived
+          $env:RW_TEST_ROOT = $archived
+          "RW_TEST_ROOT=$archived" >> $env:GITHUB_ENV
           $env:HTTP_PROXY = 'http://127.0.0.1:9'
           $env:HTTPS_PROXY = 'http://127.0.0.1:9'
           $env:NO_PROXY = '127.0.0.1,localhost'
           & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $project 'scripts\windows-start.ps1') -NoBrowser -NoDelivery
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & (Join-Path $project '.runtime\node\node.exe') (Join-Path $project 'scripts\test-desktop.cjs') $project (Join-Path $project '.runtime\python\python.exe')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $project 'scripts\windows-start.ps1') -Action stop
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
+        if: github.ref != 'refs/heads/main'
         with:
           name: windows-without-docker
           path: ${{ env.RW_TEST_ROOT }}/dist/*

@@ -1,67 +1,79 @@
-# Raumwerk auf deinem Windows-PC testen
+# Raumwerk unter Windows – ohne Docker
 
-Deine ChatGPT-Chatadresse öffnet den Chat. Die Anwendung und ihre Dateien liegen nicht automatisch auf deinem PC. Lade deshalb zuerst das ZIP-Paket von GitHub herunter. Ein eigener öffentlich erreichbarer Webserver wurde noch nicht eingerichtet.
+Für Windows 10/11 **x64**. Du brauchst einen aktuellen Browser. Docker, WSL und eine eigene Python-/Node-Installation sind für diesen Startweg nicht erforderlich.
 
-## 1. Paket herunterladen und entpacken
+## 1. Das richtige ZIP herunterladen
 
-Öffne https://github.com/cented124/immo_project und klicke im README auf **Windows-Testpaket direkt von GitHub herunterladen**. Alternativ wähle auf der Repository-Seite **Code → Download ZIP**. Melde dich bei GitHub an, falls das Repository eine Anmeldung verlangt.
+Empfohlen: **[Fertiges Windows-Paket mit Laufzeiten](https://github.com/cented124/immo_project/releases/latest/download/Raumwerk-Windows-ohne-Docker.zip)**. Es enthält Python, Node.js, Backend-Pakete und das gebaute Frontend. Der erste lokale Start benötigt damit keine Internetverbindung. Telegram, E-Mail und externe KI-Dienste benötigen für ihre jeweilige Nutzung weiterhin Internet.
 
-Klicke die heruntergeladene ZIP-Datei mit der rechten Maustaste an und wähle **Alle extrahieren**. Öffne anschließend den Ordner, in dem `STARTEN.cmd` liegt. Starte die Dateien nicht direkt aus der ZIP-Vorschau.
+Alternative: **[Kleines Windows-Quellpaket](https://github.com/cented124/immo_project/raw/refs/heads/main/downloads/Raumwerk-Windows.zip)** oder GitHub **Code → Download ZIP**. Hier richtet der erste Start die Programme automatisch ein und lädt die Abhängigkeiten herunter; dafür wird Internet benötigt. Mehrere Minuten Wartezeit beim ersten Mal sind normal.
 
-## 2. Docker Desktop installieren
+Bei einem privaten Repository musst du bei GitHub mit dem berechtigten Konto angemeldet sein.
 
-Öffne https://www.docker.com/products/docker-desktop/ und installiere **Docker Desktop für Windows**. Falls der Installer WSL 2 oder einen Neustart verlangt, folge diesen Schritten. Öffne danach Docker Desktop und warte, bis es betriebsbereit ist. Du brauchst für diesen Weg weder Python noch Node.js oder Git auf deinem PC zu installieren.
+## 2. Vollständig entpacken
 
-## 3. Anwendung starten
+Rechtsklick auf die ZIP-Datei → **Alle extrahieren**. Öffne den enthaltenen Ordner **Raumwerk**. Darin liegt `STARTEN.cmd`.
 
-Doppelklicke im entpackten Ordner auf **STARTEN.cmd**. Beim ersten Mal werden die Programme und die Datenbank vorbereitet; das kann mehrere Minuten dauern. Lass das Fenster geöffnet. Es erzeugt eigene zufällige Installationsschlüssel und verändert keine vorhandene `.env`.
+Verwende einen kurzen lokalen Ordner, zum Beispiel `C:\Users\DEINNAME\Raumwerk`. Starte nicht aus der ZIP-Vorschau. Ein Netzlaufwerk oder synchronisierter OneDrive-Ordner ist für eine laufende Datenbank ungeeignet. Mindestens 2 GB freien Platz für die Quellpaket-Einrichtung bereithalten; zusätzlich Speicher für eigene Bilder und Sicherungen.
 
-Beim ersten Start fragt das Fenster nach einer E-Mail-Adresse für deinen Administrator. Lege anschließend ein eigenes neues Passwort mit mindestens zwölf Zeichen fest und bestätige es. Beim Tippen werden keine Passwortzeichen angezeigt; das ist beabsichtigt.
+## 3. STARTEN öffnen
 
-## 4. Anmelden
+`STARTEN.cmd` doppelklicken. Im kleinen Quellpaket werden die festgelegten offiziellen Laufzeiten heruntergeladen und ihre SHA-256-Prüfsummen kontrolliert. Es werden keine Programme systemweit installiert und keine Administratorrechte angefordert.
 
-Der Browser öffnet sich automatisch. Melde dich mit dem eben erstellten Administratorkonto an. Nach dem erfolgreichen lokalen Start auf **deinem PC** lautet die Adresse `http://localhost:3000/admin`. Diese Adresse öffnet keine Anwendung in der Cloud.
+Danach öffnet sich der Browser. Wenn er nicht automatisch aufgeht, steht die lokale Adresse im Startfenster. Nutze genau diese Adresse; bei einem bereits belegten Port wählt das Programm automatisch einen freien. Fremde Programme werden nicht beendet.
 
-## 5. Deine Firma einstellen
+Das Startfenster kannst du nach erfolgreichem Start schließen. Die Anwendung läuft im Hintergrund weiter. Ein erneuter Doppelklick auf STARTEN öffnet dieselbe laufende Installation.
 
-Klicke links auf **Firma & Rechtliches**. Trage Firmenname, Anschrift, Kontakt, Rechtsform, Vertretung und die für deine Firma zutreffenden Registerdaten ein. Ergänze und prüfe Impressum und Datenschutz. Du kannst Aurevia oder jede andere Firma eintragen. Wähle **Entwurf speichern**.
+## 4. Einmal den Administrator anlegen
 
-Unter **Design & Medien** stellst du Logo, Farben und Bilder ein; unter **Seiten & Inhalte** Texte und Navigation. Das **Frontend-Studio** verbindet die Schritte: Vorschau öffnen, Daten prüfen und anschließend **Veröffentlichen**.
+Beim allerersten Start erscheint **„Dein Baukasten. Ohne Docker.“**:
 
-Wenn eine KI das Design erstellen soll: Im **Frontend-Studio** Zielgruppe und Stil eintragen, **Prompt erstellen** und **Referenzpaket exportieren** anklicken. Gib der gewünschten KI den Prompt und das ZIP. Das erzeugte `manifest.json` im Studio auswählen, **Paket prüfen**, **Als Entwurf übernehmen**, Vorschau prüfen und veröffentlichen. Für freie Änderungen am React-Quellcode gelten die Build- und Testschritte in [docs/FRONTEND-STUDIO.md](docs/FRONTEND-STUDIO.md).
+1. Eigene E-Mail-Adresse eingeben. Sie dient der Anmeldung; es wird dadurch keine E-Mail gesendet.
+2. Eigenes Passwort mit mindestens zwölf Zeichen eingeben und wiederholen.
+3. **Administrator anlegen** anklicken.
+4. Anschließend im normalen Adminbereich anmelden.
 
-Unter **Versionen** kannst du gespeicherte Konfigurationen vergleichen und einen früheren Stand als Entwurf zurückholen.
+Es gibt kein Standardpasswort. Die Einrichtungsseite wird nach der ersten erfolgreichen Anlage gesperrt. Wenn der Einrichtungslink durch ein Neuladen verloren geht, STARTEN.cmd erneut öffnen.
 
-## 6. Dein PDF einbinden
+## 5. Den Baukasten verwenden
 
-Öffne **Dokumente** und lade aus dem Paketordner **Deine PDF-Vorlage** die Datei `Aurevia_Mieterselbstauskunft.pdf` hoch. Speichere den Entwurf. Aktiviere danach unter **Module & Formulare** die **Selbstauskunft** und veröffentliche die Einstellungen. Für die optionale Rückgabe aktiviere zusätzlich **Sichere Rückgabe** unter Dokumente.
+- **Firma & Rechtliches:** Firmenname, Anschrift, Vertretung und zutreffende Registerdaten eintragen; Impressum und Datenschutz fachlich prüfen.
+- **Design & Medien / Seiten & Inhalte:** Bilder, Farben, Texte, Navigation und Abschnitte einstellen.
+- **Frontend-Studio:** KI-Prompt und Referenz exportieren, ein kompatibles Designpaket prüfen/importieren, Vorschau ansehen und veröffentlichen.
+- **Immobilien:** Objekt zunächst als Entwurf anlegen, echte Angaben und eigene Bilder ergänzen, prüfen und veröffentlichen.
+- **Dokumente / Module & Formulare:** Eigenes PDF hochladen, benötigte Module und Formularziele einstellen.
+- **Anfragen / Versionen:** Anfragen bearbeiten und gespeicherte Konfigurationen vergleichen oder als Entwurf wiederherstellen.
 
-Die Vorlage enthält vier ausfüllbare Seiten. Die im PDF beschriebenen POSTIDENT- und Türcodeverfahren sind externe Verfahren; diese Anwendung führt keine Identitätsprüfung durch und öffnet keine Türen. Das PDF wird unverändert bereitgestellt.
+Der [vollständige Beispieldurchlauf](docs/SIMULATION.md) zeigt diese Schritte mit einer erfundenen Firma und Wohnung.
 
-## 7. Telegram und E-Mail einrichten
+## 6. Telegram und E-Mail bei Bedarf einrichten
 
-Das Downloadpaket enthält **keine Zugangsdaten**. Die Cloud-Einstellungen werden absichtlich nicht mitsamt Passwörtern auf deinen PC kopiert. Trage deine vorhandenen Zugangsdaten lokal unter **Integrationen** ein.
+Die Downloads enthalten keine Zugangsdaten. Unter **Integrationen** die eigenen Daten eintragen, speichern, danach das passende Modul und die Formularziele aktivieren und veröffentlichen. Ohne Zustelldienst landen Anfragen bereits im Adminbereich.
 
-- **Telegram:** Bot-Token und Chat-ID deiner Firmengruppe eintragen, speichern und **Testnachricht senden**. Für die im Chat gewählte Gruppe ist der Bot bereits eingerichtet. Aktiviere anschließend das Telegram-Modul und den gewünschten Zustellweg pro Formular.
-- **E-Mail:** SMTP-Host `smtp0101.titan.email`, Port **465**, Verschlüsselung **TLS**, den angegebenen Benutzernamen und das Mailpasswort eingeben. Absender ist die Firmenadresse, Empfänger zunächst die von dir genannte Testadresse. IMAP brauchst du für den Versand nicht. Die Eingangsbestätigung für diesen ersten Test ausgeschaltet lassen.
-- Klicke im Rahmen dieser Testserie **einmal** auf **Test-E-Mail senden** und warte auf das Ergebnis. Prüfe auch den Spamordner. Es wurden aus der Cloud zwei erfolglose Verbindungs-/Testversuche durchgeführt und keine E-Mail zugestellt. Bis zur Klärung keine wiederholten Versandtests starten. Falls Port 465 auf deinem PC scheitert, bewahre die Fehlermeldung auf; Port 587 mit STARTTLS ist als Alternative konfigurierbar.
+Ein Klick auf **Testnachricht senden** oder **Test-E-Mail senden** versendet tatsächlich eine Nachricht. Bei den bisherigen E-Mail-Tests aus diesem Chat gab es zwei erfolglose Cloud-Verbindungsversuche und keine angenommene E-Mail. Die vereinbarte Begrenzung auf drei Mailtests bleibt bestehen; keine Testklick-Serie starten. Für diese Windows-Erweiterung wurden keine weiteren echten E-Mails oder Telegram-Nachrichten gesendet.
 
-Eine erfolgreiche Meldung besagt, dass der Zielserver die Nachricht angenommen hat. Den tatsächlichen Postfacheingang prüfst du im Empfängerpostfach. Bei der Cloud-Prüfung waren beide SMTP-Ports vor der Anmeldung nicht erreichbar; deshalb ist ein erfolgreicher E-Mail-Livetest noch offen.
+## 7. Stoppen, sichern, später starten
 
-## 8. Eine Immobilie ausprobieren
+**STOPPEN.cmd** beendet diese Installation. Das kann während laufender Arbeit kurz dauern. Daten bleiben erhalten. Beim nächsten Mal genügt **STARTEN.cmd**.
 
-Unter **Immobilien** auf **Immobilie anlegen** klicken. Fülle die Schritte aus, lade eigene Bilder hoch und speichere zunächst als Entwurf. Prüfe das Exposé über die Vorschau. Zur Veröffentlichung benötigst du die tatsächlichen Pflichtangaben; Energieangaben dürfen nicht erfunden werden. Nach der Veröffentlichung findest du das Objekt unter **Website ansehen → Immobilien**. Eine abgesendete Bewerbung erscheint unter **Anfragen** mit dem richtigen Objektbezug.
+**SICHERN.cmd** stoppt die Anwendung und legt eine ZIP-Sicherung unter **SICHERUNGEN** an. Sie enthält die Datenbank, Dateien und den Integrationsschlüssel. Diese Sicherung ist nicht passwortverschlüsselt; privat aufbewahren und nicht in GitHub oder im Chat hochladen. Zum Weiterarbeiten wieder STARTEN öffnen.
 
-## 9. Stoppen und später weitermachen
+Alle lokalen Nutzdaten liegen in **DATEN**. Die Programme liegen getrennt unter **.runtime**. Lösche niemals DATEN, um ein Programmproblem zu beheben.
 
-Zum Beenden **STOPPEN.cmd** doppelklicken. Daten bleiben erhalten. Für den nächsten Start Docker Desktop öffnen und wieder **STARTEN.cmd** doppelklicken. Lösche weder die Datei `.env` noch die Docker-Datenvolumes. Die Datei `.env` enthält Installationsgeheimnisse und gehört nicht in eine öffentliche Dateiablage.
+## 8. Bei Problemen
 
-## Wenn etwas nicht funktioniert
+**DIAGNOSE.cmd** zeigt Status, Laufzeit und Speicherplatz. Technische Protokolle liegen unter **.runtime/logs**. Teile zur Fehlersuche den Fehlertext, keine Datenbank, Schlüssel oder Passwörter.
 
-Notiere, bei welchem Schritt es scheitert, und kopiere den sichtbaren Fehlertext. Teile dabei keine Passwörter oder Tokens. Häufige Ursachen sind ein noch nicht gestartetes Docker Desktop, ein notwendiger Windows-Neustart oder ein bereits belegter Port 3000. Das Startfenster bleibt geöffnet, damit eine Fehlermeldung nicht sofort verschwindet.
+**REPARIEREN.cmd** stoppt die Installation, prüft/installiert die Programme neu und baut das Frontend neu. **DATEN bleibt erhalten.** Für erneute Downloads wird Internet benötigt.
+
+Wenn Windows oder eine Firmenrichtlinie die Programmausführung blockiert, die konkrete Meldung prüfen und gegebenenfalls die zuständige IT einbeziehen. Schutzprogramme müssen für Raumwerk nicht generell ausgeschaltet werden.
+
+## Update oder Umzug
+
+Vor einem Update STOPPEN und SICHERN verwenden. Neue Programmdateien in einen neuen lokalen Ordner entpacken und den bisherigen Ordner **DATEN vollständig** übernehmen. Er enthält auch den Schlüssel für gespeicherte Integrationen. Anschließend STARTEN öffnen. Eine bestehende Docker-/PostgreSQL-Datenbank wird dadurch nicht automatisch in SQLite umgewandelt; dafür den bisherigen Projektexport oder den dokumentierten vollständigen Betriebsumzug verwenden.
 
 ## Die fertige Website ins Internet bringen
 
-Im Baukasten **Export & Livegang** öffnen. Deine Domain eintragen, **Deployment vorbereiten** und **Fertiges Projekt exportieren** anklicken. Das neue ZIP enthält deine gespeicherten Einstellungen, Immobilien und zugeordneten Medien sowie Website und Admin. Benutzer und Zugangsdaten werden am Ziel neu eingerichtet.
+**Export & Livegang** erstellt ein Projektpaket mit Website, Admin, Immobilien und zugeordneten Medien. Dieses Paket lässt sich unter Windows ebenfalls mit STARTEN testen. Die hier gestartete Desktop-Version ist ausschließlich lokal erreichbar.
 
-Für den Livegang benötigst du einen VPS; dieser ist dein Hosting. Domain auf den VPS zeigen lassen, das neue ZIP dorthin kopieren, entpacken und im Ordner Raumwerk `bash LIVE-STARTEN.sh` starten. Folge [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) für die einzelnen Schritte. HTTPS wird mit Caddy automatisch eingerichtet, sobald DNS und die Serverports stimmen. Es wird dadurch keine bereits vorhandene Website oder Domain automatisch umgestellt.
+Für den öffentlichen Betrieb mit Domain und HTTPS bleibt die [VPS-Anleitung](docs/DEPLOYMENT.md) der vorgesehene Weg. Der optionale Docker-Start heißt unter Windows jetzt **STARTEN-DOCKER.cmd** / **STOPPEN-DOCKER.cmd**; er gehört nicht zum normalen Desktop-Start.
