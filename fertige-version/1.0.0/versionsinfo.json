@@ -1,0 +1,9 @@
+{
+  "product": "Raumwerk",
+  "version": "1.0.0",
+  "source_package": "Raumwerk-1.0.0-Quellpaket.zip",
+  "sha256": "d2a867ac6f1c43ab76784a7ac97dbebec3741b255ea28d8b78b9f6eacbe3d108",
+  "files": 142,
+  "windows_ready": "https://github.com/cented124/immo_project/releases/download/v1.0.0/Raumwerk-Windows-ohne-Docker.zip",
+  "development": "https://github.com/cented124/immo_project/tree/entwicklung"
+}

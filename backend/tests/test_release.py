@@ -18,7 +18,7 @@ from app.security import key_material
 from test_workflows import config, publish, prop, inquiry
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
-from desktop_backup import create_backup, stage_backup, replace_data
+from desktop_backup import create_backup, stage_backup, replace_data, prepare_restored_database
 
 
 def test_operating_checks_are_private_and_do_not_expose_secrets(admin, monkeypatch):
@@ -142,6 +142,48 @@ def test_backup_rejects_tampering_and_does_not_touch_current_data(admin, tmp_pat
     stage2 = tmp_path / "legacy-stage"
     stage2.mkdir()
     assert stage_backup(tmp_path / "legacy.zip", stage2)["format"] == 0
+
+
+def test_restore_drops_old_sessions_and_pauses_old_pending_notifications(admin, tmp_path):
+    if engine.dialect.name != "sqlite":
+        pytest.skip("Native backups intentionally use SQLite")
+    from app.db import Delivery
+    accepted = inquiry(admin).json()
+    with Session() as db:
+        db.add(Delivery(inquiry_id=accepted["reference"], channel="telegram", status="pending"))
+        db.commit()
+    data = tmp_path / "DATEN"
+    snapshot(data)
+    prepare_restored_database(data)
+    with sqlite3.connect(data / "app.db") as db:
+        assert db.execute("SELECT count(*) FROM sessions").fetchone()[0] == 0
+        assert db.execute("SELECT status FROM deliveries").fetchone()[0] == "failed"
+    # A corrupt current installation can still be preserved before a valid restore.
+    (data / "app.db").write_bytes(b"corrupt original database")
+    safety = create_backup(data, tmp_path / "safety", "1.0.0", validate=False)
+    with zipfile.ZipFile(safety) as archive:
+        assert archive.read("DATEN/app.db") == b"corrupt original database"
+
+
+def test_failed_data_swap_rolls_back_to_untouched_original(tmp_path, monkeypatch):
+    current = tmp_path / "DATEN"
+    current.mkdir()
+    (current / "original").write_text("keep")
+    staged = tmp_path / "stage/DATEN"
+    staged.mkdir(parents=True)
+    (staged / "replacement").write_text("new")
+    original_rename = Path.rename
+
+    def rename(self, target):
+        if self == staged:
+            raise PermissionError("simulate Windows lock")
+        return original_rename(self, target)
+
+    monkeypatch.setattr(Path, "rename", rename)
+    with pytest.raises(RuntimeError):
+        replace_data(current, staged)
+    assert (current / "original").read_text() == "keep"
+    assert not (current / "replacement").exists()
 
 
 @pytest.mark.parametrize("names", [["DATEN/../../outside"], ["DATEN/CON.txt"], ["DATEN/a", "DATEN/A"], ["DATEN\\a"], ["other/app.db"]])

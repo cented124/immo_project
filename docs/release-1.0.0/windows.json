@@ -1,0 +1,17 @@
+{
+  "result": "passed",
+  "system": "win32",
+  "setup": true,
+  "duplicate_start": true,
+  "occupied_port_preserved": true,
+  "inquiry": true,
+  "project_export_and_import": true,
+  "complete_frontend_import_and_object_inquiry": true,
+  "restart": true,
+  "encrypted_key_preserved": true,
+  "backup": true,
+  "verified_restore_recovers_deleted_inquiry_and_custom_frontend": true,
+  "restore_revokes_sessions": true,
+  "administrator_recovery": true,
+  "no_external_delivery": true
+}

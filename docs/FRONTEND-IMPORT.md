@@ -4,7 +4,7 @@ Du brauchst die aktuelle Raumwerk-Version. Ein älteres Raumwerk importiert nur 
 
 ## Dein London-Frontend aus raumwerk_test
 
-1. [Aktuelles Windows-Paket](https://github.com/cented124/immo_project/releases/latest) laden und wie unten aktualisieren.
+1. [Aktuelles Windows-Paket](https://github.com/cented124/immo_project/releases/tag/v1.0.0) laden und wie unten aktualisieren.
 2. [Westminster-Frontend.zip herunterladen](https://github.com/cented124/immo_project/raw/refs/heads/main/downloads/Westminster-Frontend.zip). Das ist das fertig gebaute Frontend aus `cented124/raumwerk_test`, einschließlich London-Gestaltung, Illustration und lokaler Schriften.
 3. Im Baukasten **Frontend-Studio → Frontend importieren** öffnen und das ZIP auswählen. **Nicht entpacken.**
 4. Die Prüfung läuft automatisch. **Als Entwurf übernehmen → Vorschau öffnen**.

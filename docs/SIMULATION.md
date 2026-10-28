@@ -1,5 +1,7 @@
 # Komplette Simulation – 27.10.2026
 
+Historische Entwicklungssimulation. Für die fertige Ausgabe siehe [Freigabebericht 1.0.0](RELEASE-1.0.0.md); damalige Demo-Downloads bleiben im Branch `entwicklung`.
+
 **Ergebnis: bestanden.** Zwei getrennte Browsersitzungen haben den Ablauf vom Baukasten über den Deploy bis zur echten Telegram-Zustellung und Bearbeitung im deployten Admin durchgespielt. Alle Firmen-, Personen- und Objektdaten sind erfunden.
 
 | Schritt | Tatsächlich durchgeführt |
@@ -24,8 +26,8 @@ Zusätzlich geprüft: Besucher erhalten keinen Adminzugriff, PDF-Download bleibt
 - [Dashboard nach der Bearbeitung](simulation/admin-dashboard.png)
 - [Mobile Website](simulation/mobil.png)
 - [Erstellter KI-Prompt](simulation/KI-Prompt.md) und [importiertes Manifest](simulation/manifest.json)
-- [Konfiguriertes Demo-Projekt herunterladen](https://github.com/cented124/immo_project/raw/refs/heads/main/downloads/Kuestenklar-Demo-Website.zip)
-- [Importierbares Frontend-Design herunterladen](https://github.com/cented124/immo_project/raw/refs/heads/main/downloads/Kuestenklar-Frontend.zip)
+- [Konfiguriertes Demo-Projekt herunterladen](https://github.com/cented124/immo_project/raw/refs/heads/entwicklung/downloads/Kuestenklar-Demo-Website.zip)
+- [Importierbares Frontend-Design herunterladen](https://github.com/cented124/immo_project/raw/refs/heads/entwicklung/downloads/Kuestenklar-Frontend.zip)
 
 Das Demo-Projekt enthält Website, Musterfirma, Wohnung und Demo-PDF. Entpacken und mit `STARTEN.cmd` wie in der [Windows-Anleitung](../ANLEITUNG-WINDOWS.md) starten; einen eigenen Administrator anlegen. Für einen neuen Import des Designs bei bereits vorhandener ID diese im Manifest ändern.
 

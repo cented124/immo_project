@@ -34,3 +34,9 @@ Ein Windows-Runner ist ein echter Windows-Test, aber keine Prüfung jedes Window
 Der native Test bedient jetzt auch den Version-3-ZIP-Import im Studio, lädt die private Vorschau, veröffentlicht, stellt als getrennte Person eine Objektanfrage aus der importierten Oberfläche, exportiert/importiert das Projekt erneut und prüft Paketbestand nach Sicherung und Neustart. [Bestandener Windows-/Offline-Lauf](https://github.com/cented124/immo_project/actions/runs/40770385111).
 
 Der Loopback-Gateway akzeptiert für freigegebene Ressourcen-GETs den opaque Browser-Origin null, damit isolierte Scripts/Styles/Fonts laden. Admin, Einrichtung, Kontrollzugriff und schreibende Anfragen erhalten diese Ausnahme nicht. Eine TCP-Warteschlange mit 128 Plätzen verhindert unter Windows Verbindungsablehnungen bei gleichzeitigem Admin-Prefetch und parallelen APIzugriffen. Der Test fordert nach Neustart zwölf Verbindungen gleichzeitig an. Bereitstellung und autorisierter Stopp werden ohne Anfrageinhalte protokolliert.
+
+## Ausgabe 1.0.0: geprüfter Restore und Zugangswiederherstellung
+
+Der native Test sichert nach der zweiten Objektanfrage, löscht absichtlich eine Anfrage und stellt sie aus dem Archiv wieder her. Er prüft Medien, benutzerdefiniertes Frontend, Integrationsschlüssel und ungültige alte Sitzungen. Anschließend wird das Administratorpasswort über den lokalen Controller wiederhergestellt und die Anmeldung erneut geprüft. Dieselben Schritte laufen im versetzten Offline-Paket.
+
+Alle SQLite-Prüfverbindungen werden ausdrücklich geschlossen, bevor Windows Dateien oder Ordner austauscht. Der fehlgeschlagene erste Kandidat wurde damit korrigiert; [vollständig bestandener Windows-/Offline-Lauf](https://github.com/cented124/immo_project/actions/runs/40785718730). Weitere Ergebnisse und Grenzen im [Freigabebericht](RELEASE-1.0.0.md).

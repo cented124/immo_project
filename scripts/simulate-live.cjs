@@ -6,7 +6,8 @@ const { chromium, expect } = require("../frontend/node_modules/@playwright/test"
 const configFile = path.resolve(process.argv[2]);
 const run = path.dirname(configFile);
 const config = JSON.parse(fs.readFileSync(configFile, "utf8"));
-if (!config.url.startsWith("https://release.raumwerk.test:") || !config.spki)
+const target = new URL(config.url);
+if (target.protocol !== "https:" || target.hostname !== "release.raumwerk.test" || !target.port || target.username || target.password || target.pathname !== "/" || target.search || target.hash || !config.spki)
   throw new Error("Only the isolated release.raumwerk.test installation is supported.");
 const headers = { "X-Requested-With": "Raumwerk" };
 let browser;

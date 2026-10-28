@@ -1,0 +1,20 @@
+{
+  "result": "passed",
+  "version": "1.0.0",
+  "company": "Lindenhafen Immobilien GmbH",
+  "direct_live_property_creation": true,
+  "custom_frontend_import": true,
+  "mobile_customer": true,
+  "publication_withdrawal_republication": true,
+  "inquiry": true,
+  "simulated_telegram_delivery": true,
+  "admin_processing": true,
+  "https": true,
+  "search_metadata": true,
+  "system_ready": true,
+  "public_vps": false,
+  "real_messages_sent": 0,
+  "postgres_dump_restore": true,
+  "restored_counts": "1|1|1|5",
+  "restored_postgres_sessions_revoked": true
+}

@@ -1,5 +1,7 @@
 # Nachweis der lokalen Abnahme
 
+Aktuelle feste Ausgabe: **[Raumwerk 1.0.0 – Freigabebericht](RELEASE-1.0.0.md)**. Die folgenden Abschnitte enthalten auch historische Entwicklungsnachweise.
+
 Stand: 28.10.2026. Alle Daten in automatisierten Tests sind ausdrücklich synthetisch. Keine Beispielimmobilie wurde im eigentlichen Entwicklungsdatenbestand veröffentlicht.
 
 | Prüfung | Ergebnis |

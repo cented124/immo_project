@@ -1,3 +1,5 @@
+> Entwicklerunterlagen und historische Einrichtung. Für den regulären Start die [kurze Hauptanleitung](../README.md) verwenden.
+
 # Raumwerk – firmenneutraler Immobilien-Baukasten
 
 Eine selbst hostbare Anwendung für **ein beliebiges Unternehmen und eine Website**. Firmenname, Logo, Farben, Schriften, Kontaktdaten, Inhalte und Template sind Einstellungen. Der Startwert „RAUM & WERT“ ist eine austauschbare Musteridentität; Aurevia ist keine fest eingebaute Firma. Es gibt keine Mehrmandantenverwaltung oder Abrechnung.
@@ -18,11 +20,11 @@ Eine selbst hostbare Anwendung für **ein beliebiges Unternehmen und eine Websit
 
 ## Einfacher Start unter Windows
 
-Ein vollständiger Durchlauf mit Musterfirma, Wohnung, eigenem Frontend, Docker-Deployment, echter Telegram-Zustellung und Adminbearbeitung ist unter [Simulation mit Screenshots und Demo-Download](docs/SIMULATION.md) dokumentiert.
+Ein vollständiger Durchlauf mit Musterfirma, Wohnung, eigenem Frontend, Docker-Deployment, echter Telegram-Zustellung und Adminbearbeitung ist unter [Simulation mit Screenshots und Demo-Download](SIMULATION.md) dokumentiert.
 
 **Ohne Docker:** Lade das **[fertige Windows-Paket mit Laufzeiten](https://github.com/cented124/immo_project/releases/latest/download/Raumwerk-Windows-ohne-Docker.zip)** herunter, entpacke es und öffne `STARTEN.cmd`. Python, Node.js und das gebaute Frontend sind enthalten; die erste Administratoranlage erfolgt im Browser. Für Windows 10/11 x64. Falls GitHub eine Anmeldung verlangt, das Konto mit Repositoryzugriff verwenden.
 
-Alternativ richtet das **[kleine Windows-Quellpaket](https://github.com/cented124/immo_project/raw/refs/heads/main/downloads/Raumwerk-Windows.zip)** die festgelegten Laufzeiten beim ersten Start automatisch über das Internet ein. Es installiert nichts systemweit. Details: [einfache Windows-Anleitung](ANLEITUNG-WINDOWS.md).
+Alternativ richtet das **[kleine Windows-Quellpaket](https://github.com/cented124/immo_project/raw/refs/heads/main/downloads/Raumwerk-Windows.zip)** die festgelegten Laufzeiten beim ersten Start automatisch über das Internet ein. Es installiert nichts systemweit. Details: [einfache Windows-Anleitung](../ANLEITUNG-WINDOWS.md).
 
 Lokale Daten liegen unter `DATEN`, Programme getrennt unter `.runtime`. `STOPPEN.cmd`, `SICHERN.cmd`, `DIAGNOSE.cmd` und `REPARIEREN.cmd` unterstützen den Betrieb. Docker-/WSL-Dienste und eine separate Datenbank werden für diesen lokalen Startweg nicht benötigt. Der VPS-Start bleibt unabhängig davon verfügbar.
 
@@ -30,7 +32,7 @@ Alternativ auf dieser Repository-Seite **Code → Download ZIP** auswählen. Öf
 
 ## Ein eigenes KI-Frontend importieren
 
-**Ein fertiges ZIP genügt:** HTML, CSS, JavaScript, Bilder und lokale Schriften werden gemeinsam importiert. Das Frontend-Studio prüft automatisch und übernimmt zuerst nur einen Entwurf. [Einfache Anleitung und Windows-Update](docs/FRONTEND-IMPORT.md) · [Fertiges London-Frontend aus raumwerk_test](downloads/Westminster-Frontend.zip). Ältere JSON-Manifeste übernehmen nur Theme-Werte.
+**Ein fertiges ZIP genügt:** HTML, CSS, JavaScript, Bilder und lokale Schriften werden gemeinsam importiert. Das Frontend-Studio prüft automatisch und übernimmt zuerst nur einen Entwurf. [Einfache Anleitung und Windows-Update](FRONTEND-IMPORT.md) · [Fertiges London-Frontend aus raumwerk_test](../downloads/Westminster-Frontend.zip). Ältere JSON-Manifeste übernehmen nur Theme-Werte.
 
 ## Schnellstart: lokal
 
@@ -59,7 +61,7 @@ docker compose exec api python -m app.cli create-admin --email sie@unternehmen.d
 
 `configure.py` erzeugt einmalig eine `.env` mit zufälligem Datenbankpasswort und Fernet-Schlüssel und überschreibt keine bestehende Datei. Die Datenbankmigration läuft beim Backendstart. Persistente Volumes: `database` und `files`. Nur die Website wird an `127.0.0.1:3000` gebunden; weder PostgreSQL noch das Backend besitzen im Compose-Betrieb einen öffentlichen Host-Port.
 
-Für eine echte Domain: **Export & Livegang** im Admin öffnen und der [VPS-Anleitung](docs/DEPLOYMENT.md) folgen. `bash LIVE-STARTEN.sh` startet zusätzlich Caddy mit automatischem HTTPS. Die mitgelieferte Produktionskonfiguration überschreibt Client-IP-Header am öffentlichen Proxy und vertraut ihnen ausschließlich in der internen API. Bei einer eigenen Proxykonfiguration gelten die [Betriebsgrenzen](docs/OPERATIONS.md).
+Für eine echte Domain: **Export & Livegang** im Admin öffnen und der [VPS-Anleitung](DEPLOYMENT.md) folgen. `bash LIVE-STARTEN.sh` startet zusätzlich Caddy mit automatischem HTTPS. Die mitgelieferte Produktionskonfiguration überschreibt Client-IP-Header am öffentlichen Proxy und vertraut ihnen ausschließlich in der internen API. Bei einer eigenen Proxykonfiguration gelten die [Betriebsgrenzen](OPERATIONS.md).
 
 ```bash
 docker compose logs --tail=50 api web
@@ -80,7 +82,7 @@ docker compose restart api web
 7. **Dokumente**: Ihr eigenes Selbstauskunft-PDF hochladen und anschließend das Modul einschalten. Sichere Rückgabe nur bei Bedarf separat aktivieren.
 8. **Firma & Rechtliches**: Impressum und Datenschutz fachlich/rechtlich prüfen; unter Einstellungen die Aufbewahrung festlegen. Empfänger und Aufbewahrung müssen zum tatsächlichen Betrieb passen.
 
-Für KI-Designs öffne das **Frontend-Studio**: Firmendaten → Prompt und Referenzpaket → Design importieren → prüfen → veröffentlichen. Direkt importierbare Pakete steuern den bestehenden Renderer; freie React-Quelltexte aus dem vollständigen Referenzprojekt benötigen Einbau, Build und Tests. Details: [Frontend-Studio](docs/FRONTEND-STUDIO.md). Gespeicherte Konfigurationen können unter **Versionen** verglichen und als Entwurf wiederhergestellt werden.
+Für KI-Designs öffne das **Frontend-Studio**: Firmendaten → Prompt und Referenzpaket → Design importieren → prüfen → veröffentlichen. Direkt importierbare Pakete steuern den bestehenden Renderer; freie React-Quelltexte aus dem vollständigen Referenzprojekt benötigen Einbau, Build und Tests. Details: [Frontend-Studio](FRONTEND-STUDIO.md). Gespeicherte Konfigurationen können unter **Versionen** verglichen und als Entwurf wiederhergestellt werden.
 
 **Export & Livegang** erzeugt das vollständige neue Projekt mit veröffentlichtem Stand, gespeichertem Entwurf, allen Immobilien und zugeordneten Medien. Der Erststart übernimmt diese Daten einmalig in die frische Instanz. Nutzer, echte Anfragen, ausgefüllte Selbstauskünfte und Geheimnisse werden nicht exportiert; Kontakte werden am Ziel zunächst im Admin gespeichert. Vollständige Betriebsumzüge bleiben Aufgabe des verschlüsselten Backups.
 
@@ -138,10 +140,10 @@ CHROMIUM_PATH=/usr/bin/chromium npm --prefix frontend run test:e2e
 
 Die Python-Suite benutzt eine separate temporäre Datenbank. Für PostgreSQL `TEST_DATABASE_URL` auf eine **dedizierte Testdatenbank** setzen; diese wird bei jedem Test geleert. Die Browser-Suite startet getrennte Prozesse auf 3001/8001 mit `.local/e2e`; synthetische Objekte werden dort ausdrücklich als Tests markiert. Tests verwenden lokale SMTP-/HTTP-Testdienste, keine echten Empfänger.
 
-Details: [Testnachweis](docs/VALIDATION.md), [Architektur](docs/ARCHITECTURE.md), [Templates / vorhandenes Frontend](docs/TEMPLATES.md), [Betrieb und Wiederherstellung](docs/OPERATIONS.md), [Umsetzungsstand](docs/STATUS.md).
+Details: [Testnachweis](VALIDATION.md), [Architektur](ARCHITECTURE.md), [Templates / vorhandenes Frontend](TEMPLATES.md), [Betrieb und Wiederherstellung](OPERATIONS.md), [Umsetzungsstand](STATUS.md).
 
 ## Bewusste Grenzen
 
 Lokale Dateiablage ist enthalten; S3, Online-HTML-/React-Codeimport, Drag-and-drop-Seiteneditor, automatische Immobilienportal-Synchronisation, digitale Bonitätsprüfung und kontaktlose Besichtigung sind nicht implementiert. Fremde Frontends benötigen einen geprüften Adapter. Beispieltexte im Impressum/Datenschutz sind ausdrücklich **nicht veröffentlichungsfertig**. Ein öffentlicher Produktivbetrieb ist nicht eingerichtet. Das kundeneigene PDF ist inzwischen bytegleich geprüft und Telegram live in der gewünschten Gruppe bestätigt. Externe SMTP-Zustellung bleibt wegen der abgelehnten Cloud-Verbindungen zu Port 465/587 unbestätigt.
 
-Der vollständige [Auftragsabgleich](docs/AUFTRAGSABGLEICH.md) dokumentiert Ergänzungen, Nachweise und offene externe Voraussetzungen. Unter **Mein Konto** lassen sich Passwörter ändern; Administratoren können Konten sperren, Rollen ändern, Passwörter zurücksetzen und Benutzer löschen. Bestehende Sitzungen werden widerrufen; der letzte aktive Administrator ist geschützt.
+Der vollständige [Auftragsabgleich](AUFTRAGSABGLEICH.md) dokumentiert Ergänzungen, Nachweise und offene externe Voraussetzungen. Unter **Mein Konto** lassen sich Passwörter ändern; Administratoren können Konten sperren, Rollen ändern, Passwörter zurücksetzen und Benutzer löschen. Bestehende Sitzungen werden widerrufen; der letzte aktive Administrator ist geschützt.

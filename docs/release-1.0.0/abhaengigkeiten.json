@@ -1,0 +1,20 @@
+{
+  "python": {
+    "packages": 33,
+    "known_findings": 0
+  },
+  "windows": {
+    "packages": 31,
+    "known_findings": 0
+  },
+  "npm_production": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "date": "2026-10-28",
+  "scope": "Abgleich bekannter Sicherheitsmeldungen, keine Garantie gegen unbekannte Schwachstellen."
+}

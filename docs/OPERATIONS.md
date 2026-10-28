@@ -36,6 +36,8 @@ cp /sicherer/restore/environment.env .env
 chmod 600 .env
 docker compose up -d db
 docker compose exec -T db pg_restore -U raumwerk -d raumwerk --clean --if-exists < /sicherer/restore/database.dump
+# Alte Sitzungen sperren und unklare, noch wartende Zustellungen pausieren:
+docker compose exec -T db psql -U raumwerk -d raumwerk -v ON_ERROR_STOP=1 -c "DELETE FROM sessions; UPDATE deliveries SET status='failed', error='Nach Wiederherstellung pausiert. Zustellung vor manueller Wiederaufnahme pruefen.' WHERE status IN ('pending','retry');"
 # API-Container und sein Datenvolume erstellen, aber noch nicht starten:
 docker compose create api
 docker compose cp /sicherer/restore/files/. api:/data

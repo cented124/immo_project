@@ -4,7 +4,7 @@ Der firmenneutrale Baukasten für eine Immobilienwebsite mit eigenem Adminbereic
 
 ## Fertige Version herunterladen
 
-**[Fertige Version – Downloads und kurze Anleitung](fertige-version/README.md)**
+**[Fertige Version – Downloads und kurze Anleitung](https://github.com/cented124/immo_project/tree/main/fertige-version)**
 
 Für Windows 10/11 x64 gibt es ein vollständiges Paket **ohne Docker**. ZIP entpacken und `STARTEN.cmd` öffnen. Python, Node.js und das gebaute Frontend sind im fertigen Windows-Paket enthalten. Die erste Administratoranlage erfolgt im Browser. Es gibt kein Standardpasswort.
 

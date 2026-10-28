@@ -717,7 +717,7 @@ def restore(archive_path, confirmed=False):
                     print("Abgebrochen. Vorhandene Daten bleiben erhalten.")
                     return
             stop()
-            if (DATA / "app.db").is_file():
+            if DATA.exists() and any(DATA.iterdir()):
                 previous = create_backup(DATA, ROOT / "SICHERUNGEN", VERSION, validate=False)
                 print("Zusaetzliche Sicherung des bisherigen Stands: " + str(previous))
             prepare_restored_database(stage / "DATEN")

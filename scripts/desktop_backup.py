@@ -163,7 +163,8 @@ def prepare_restored_database(data):
 
 
 def replace_data(data, staged):
-    previous = staged.parent / ("previous-DATEN-" + secrets.token_hex(8))
+    # Keep the fallback outside the temporary extraction tree, even on rollback failure.
+    previous = staged.parent.parent / ("restore-previous-" + secrets.token_hex(8))
     moved = False
     try:
         if data.exists():
@@ -172,7 +173,10 @@ def replace_data(data, staged):
         staged.rename(data)
     except OSError:
         if moved:
-            previous.rename(data)
+            try:
+                previous.rename(data)
+            except OSError:
+                raise RuntimeError("Wiederherstellung blockiert. Bisherige Daten bleiben im privaten restore-previous-Ordner unter .runtime/control erhalten. DIAGNOSE.cmd verwenden.")
         raise RuntimeError("Wiederherstellung blockiert. Der bisherige Datenordner wurde zurueckgesetzt.")
     if moved:
         shutil.rmtree(previous, ignore_errors=True)

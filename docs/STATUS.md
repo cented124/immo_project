@@ -1,5 +1,7 @@
 # Fortsetzbarer Umsetzungsstand
 
+Aktuelle feste Ausgabe: **[Raumwerk 1.0.0 – Freigabebericht](RELEASE-1.0.0.md)**. Die folgenden Abschnitte enthalten auch historische Entwicklungsnachweise.
+
 Stand: 28.10.2026. Produktname des firmenneutralen Werkzeugs: **Raumwerk**. Musteridentität der öffentlichen Website: austauschbares „RAUM & WERT“. Kein Aurevia-spezifischer Datenbank-/Backendcode.
 
 ## Umgesetzt
