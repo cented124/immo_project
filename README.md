@@ -1,6 +1,6 @@
 # Raumwerk – firmenneutraler Immobilien-Baukasten
 
-Eine selbst hostbare Anwendung für **ein beliebiges Unternehmen und eine Website**. Firmenname, Logo, Farben, Schriften, Kontaktdaten, Inhalte und Template sind Einstellungen. Der Startwert „RAUM & WERT“ ist eine austauschbare Musteridentität; Aurevia ist keine fest eingebaute Firma. Es gibt keine Mehrmandantenverwaltung oder Abrechnung.
+Eine selbst hostbare Anwendung für **ein beliebiges Unternehmen und eine Website**. Firmenname, Logo, Farben, Schriften, Kontaktdaten, Inhalte und Template sind Einstellungen. Der Startwert „RAUM & WERT“ ist eine austauschbare Musteridentität; keine fest eingebaute Firma. Es gibt keine Mehrmandantenverwaltung oder Abrechnung.
 
 ## Was enthalten ist
 
